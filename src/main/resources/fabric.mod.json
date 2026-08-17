@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "chilin_story",
+  "version": "${version}",
+  "name": "Chilin Story",
+  "description": "A layered, animated story dialogue test flight for Cobblemon NPCs.",
+  "authors": [
+    "Chilin Story Team"
+  ],
+  "environment": "*",
+  "mixins": [
+    "chilin_story.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "minecraft": "1.21.1",
+    "cobblemon": ">=1.8.0 <1.9.0"
+  }
+}

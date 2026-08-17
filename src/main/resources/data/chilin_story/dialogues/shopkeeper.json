@@ -1,0 +1,116 @@
+{
+  "background": "chilin_story:textures/gui/shop/shop_main.png",
+  "escapeAction": "q.dialogue.close();",
+  "speakers": {
+    "shopkeeper": {
+      "name": "npc.chilin_story.shopkeeper",
+      "gibber": {
+        "graduallyShowText": false,
+        "allowSkip": true
+      }
+    }
+  },
+  "pages": [
+    {
+      "id": "main",
+      "speaker": "shopkeeper",
+      "lines": [
+        {
+          "type": "expression",
+          "expression": "'Welcome, ' + q.player.username + '! What can I do for you?'"
+        }
+      ],
+      "input": {
+        "type": "option",
+        "vertical": true,
+        "options": [
+          {
+            "text": "Buy",
+            "value": "buy",
+            "action": "q.dialogue.set_page('buy_menu');"
+          },
+          {
+            "text": "Talk",
+            "value": "talk",
+            "action": "q.dialogue.set_page('talk_1');"
+          },
+          {
+            "text": "Say goodbye",
+            "value": "goodbye",
+            "action": "q.dialogue.close();"
+          }
+        ]
+      }
+    },
+    {
+      "id": "buy_menu",
+      "speaker": "shopkeeper",
+      "lines": [
+        "What would you like to browse?"
+      ],
+      "input": {
+        "type": "option",
+        "vertical": true,
+        "options": [
+          {
+            "text": "Poké Balls",
+            "value": "poke_balls",
+            "action": "q.dialogue.set_page('catalog_poke_balls');"
+          },
+          {
+            "text": "Medicine",
+            "value": "medicine",
+            "action": "q.dialogue.set_page('catalog_medicine');"
+          },
+          {
+            "text": "Back",
+            "value": "back",
+            "action": "q.dialogue.set_page('main');"
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog_poke_balls",
+      "speaker": "shopkeeper",
+      "lines": [
+        "Poké Ball — 200\nGreat Ball — 600\nUltra Ball — 1,200",
+        "This test flight shows the catalog flow. Connect these entries to your economy before enabling purchases."
+      ],
+      "input": "q.dialogue.set_page('buy_menu');"
+    },
+    {
+      "id": "catalog_medicine",
+      "speaker": "shopkeeper",
+      "lines": [
+        "Potion — 300\nSuper Potion — 700\nRevive — 1,500",
+        "This test flight shows the catalog flow. Connect these entries to your economy before enabling purchases."
+      ],
+      "input": "q.dialogue.set_page('buy_menu');"
+    },
+    {
+      "id": "talk_1",
+      "speaker": "shopkeeper",
+      "lines": [
+        "Travelers tell me the old road beyond town has started to feel different. Too quiet, even for this hour."
+      ],
+      "input": "q.dialogue.set_page('talk_2');"
+    },
+    {
+      "id": "talk_2",
+      "speaker": "shopkeeper",
+      "lines": [
+        "Yesterday I found fresh Pokémon tracks beside the shrine, but they stopped in the middle of the path."
+      ],
+      "input": "q.dialogue.set_page('talk_3');"
+    },
+    {
+      "id": "talk_3",
+      "speaker": "shopkeeper",
+      "lines": [
+        "If your team is ready, ask around before heading out. Someone in town must know what happened."
+      ],
+      "input": "q.dialogue.set_page('main');"
+    }
+  ]
+}

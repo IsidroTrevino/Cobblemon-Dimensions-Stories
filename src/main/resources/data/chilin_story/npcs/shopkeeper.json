@@ -1,0 +1,17 @@
+{
+  "hitbox": "player",
+  "resourceIdentifier": "cobblemon:standard",
+  "names": [
+    "npc.chilin_story.shopkeeper"
+  ],
+  "interaction": {
+    "type": "dialogue",
+    "dialogue": "chilin_story:shopkeeper"
+  },
+  "canDespawn": false,
+  "hideNameTag": false,
+  "isMovable": false,
+  "isInvulnerable": true,
+  "isLeashable": false,
+  "allowProjectileHits": false
+}
