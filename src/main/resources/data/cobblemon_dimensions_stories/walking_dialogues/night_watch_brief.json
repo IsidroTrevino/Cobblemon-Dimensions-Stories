@@ -1,0 +1,38 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Something has been coming out of the treeline after dark. Six of them, near enough, every night." }
+      ],
+      "next": "ask"
+    },
+    {
+      "id": "ask",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "I can keep a stall. I cannot keep a watch. Can you?" }
+      ],
+      "options": [
+        { "text": { "text": "I'll take the first shift." }, "next": "deal" },
+        { "text": { "text": "Why not just move the stall?" }, "next": "stubborn" }
+      ]
+    },
+    {
+      "id": "stubborn",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "My grandmother set these posts. I am not carrying them anywhere." }
+      ],
+      "next": "deal"
+    },
+    {
+      "id": "deal",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Six husks. Then come and stand where I can see you, so I know you are still whole." }
+      ]
+    }
+  ]
+}

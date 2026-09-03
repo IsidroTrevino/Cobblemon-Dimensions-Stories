@@ -1,0 +1,13 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.description" }
+  ],
+  "objective": { "type": "dialogue" },
+  "rewards": [
+    { "type": "command", "command": "give @s minecraft:golden_apple 1", "label": { "text": "A gift from the back room" } }
+  ],
+  "dialogue": "cobblemon_dimensions_stories:the_curators_favor",
+  "requires": ["cobblemon_dimensions_stories:gather_apricorns"],
+  "order": 30
+}

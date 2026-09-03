@@ -1,18 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "chilin_story",
+  "id": "cobblemon_dimensions_stories",
   "version": "${version}",
-  "name": "Chilin Story",
-  "description": "A layered, animated story dialogue test flight for Cobblemon NPCs.",
+  "name": "Cobblemon Dimensions Stories",
+  "description": "Story NPCs, quests and arcade minigames for Cobblemon servers.",
   "authors": [
-    "Chilin Story Team"
+    "Cobblemon Dimensions Stories Team"
   ],
   "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.cobblemondimensions.stories.CobblemonDimensionsStories"
+    ],
+    "client": [
+      "com.cobblemondimensions.stories.client.CobblemonDimensionsStoriesClient"
+    ]
+  },
   "mixins": [
-    "chilin_story.mixins.json"
+    "cobblemon_dimensions_stories.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.17.2",
+    "fabric-api": "*",
     "minecraft": "1.21.1",
     "cobblemon": ">=1.8.0 <1.9.0"
   }

@@ -1,0 +1,11 @@
+{
+  "pages": [
+    {
+      "id": "nag",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "The ridge is still rattling. Three archers, and mind the drop on the far side." }
+      ]
+    }
+  ]
+}

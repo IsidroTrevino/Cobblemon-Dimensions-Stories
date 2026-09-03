@@ -1,0 +1,19 @@
+{
+  "npc_class": "cobblemon_dimensions_stories:shopkeeper",
+  "name": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+  "quests": [
+    "cobblemon_dimensions_stories:first_steps",
+    "cobblemon_dimensions_stories:the_night_watch",
+    "cobblemon_dimensions_stories:the_long_way_home"
+  ],
+  "idle_dialogue": "cobblemon_dimensions_stories:arcade_mara",
+  "route": [
+    [0, 0, 0],
+    [4, 0, 0],
+    [4, 0, 4],
+    [0, 0, 4]
+  ],
+  "route_speed": 0.4,
+  "route_pause": 80,
+  "follow_speed": 0.55
+}

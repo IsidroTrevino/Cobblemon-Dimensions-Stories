@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "chilin-story"
+rootProject.name = "cobblemon-dimensions-stories"

@@ -1,0 +1,26 @@
+{
+  "hitbox": "player",
+  "resourceIdentifier": "cobblemon:standard",
+  "names": [
+    "npc.cobblemon_dimensions_stories.hand_shopkeeper"
+  ],
+  "interaction": {
+    "type": "dialogue",
+    "dialogue": "cobblemon_dimensions_stories:hand_shopkeeper"
+  },
+  "ai": [
+    {
+      "type": "apply_behaviours",
+      "behaviours": [
+        "cobblemon:core",
+        "cobblemon:looks_at_players"
+      ]
+    }
+  ],
+  "canDespawn": false,
+  "hideNameTag": false,
+  "isMovable": false,
+  "isInvulnerable": true,
+  "isLeashable": false,
+  "allowProjectileHits": false
+}

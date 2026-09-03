@@ -1,0 +1,38 @@
+{
+  "pages": [
+    {
+      "id": "request",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Eight apples. Ripe ones, not the bruised ones you find under the tree." }
+      ],
+      "next": "why"
+    },
+    {
+      "id": "why",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Don't ask what I do with them. Ask instead whether you want to be paid." }
+      ],
+      "options": [
+        { "text": { "text": "I want to be paid." }, "next": "deal" },
+        { "text": { "text": "What DO you do with them?" }, "next": "secret" }
+      ]
+    },
+    {
+      "id": "secret",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "I asked you not to ask. Now we both have to live with that." }
+      ],
+      "next": "deal"
+    },
+    {
+      "id": "deal",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Bring them straight back to me. Don't leave them in a chest to rot." }
+      ]
+    }
+  ]
+}

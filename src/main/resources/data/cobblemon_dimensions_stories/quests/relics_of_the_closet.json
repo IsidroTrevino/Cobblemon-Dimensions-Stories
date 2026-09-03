@@ -1,0 +1,36 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.description" }
+  ],
+  "stages": [
+    {
+      "type": "item",
+      "item": "minecraft:bone",
+      "count": 3,
+      "consume": true,
+      "hint": { "text": "Bring the Curator 3 bones." },
+      "dialogue": "cobblemon_dimensions_stories:relics_brief",
+      "reminder": "cobblemon_dimensions_stories:relics_nag"
+    },
+    {
+      "type": "kill",
+      "entity": "minecraft:spider",
+      "count": 4,
+      "hint": { "text": "Clear the spiders out of the crawlspace." },
+      "dialogue": "cobblemon_dimensions_stories:relics_spiders",
+      "reminder": "cobblemon_dimensions_stories:relics_spiders_nag"
+    },
+    {
+      "type": "dialogue",
+      "hint": { "text": "Let the Curator explain himself." },
+      "dialogue": "cobblemon_dimensions_stories:relics_epilogue"
+    }
+  ],
+  "rewards": [
+    { "type": "item", "item": "cobblemon:ultra_ball", "count": 3 },
+    { "type": "command", "command": "give @s minecraft:enchanted_golden_apple 1", "label": { "text": "Something from the very back" } }
+  ],
+  "requires": ["cobblemon_dimensions_stories:the_long_way_home"],
+  "order": 60
+}

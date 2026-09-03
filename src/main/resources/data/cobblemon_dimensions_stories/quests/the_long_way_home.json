@@ -1,0 +1,26 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.description" }
+  ],
+  "stages": [
+    {
+      "type": "escort",
+      "count": 60,
+      "hint": { "text": "Walk Mara away from her stall." },
+      "dialogue": "cobblemon_dimensions_stories:long_way_brief",
+      "reminder": "cobblemon_dimensions_stories:long_way_nag"
+    },
+    {
+      "type": "dialogue",
+      "hint": { "text": "Hear Mara out." },
+      "dialogue": "cobblemon_dimensions_stories:long_way_arrive"
+    }
+  ],
+  "rewards": [
+    { "type": "item", "item": "minecraft:emerald", "count": 5 },
+    { "type": "item", "item": "minecraft:cooked_beef", "count": 8 }
+  ],
+  "requires": ["cobblemon_dimensions_stories:the_night_watch"],
+  "order": 50
+}

@@ -1,0 +1,196 @@
+{
+  "background": "cobblemon_dimensions_stories:textures/gui/hand/hand_illustration_background.png",
+  "escapeAction": "q.dialogue.close();",
+  "speakers": {
+    "curator": {
+      "name": "npc.cobblemon_dimensions_stories.hand_shopkeeper",
+      "gibber": {
+        "graduallyShowText": false,
+        "allowSkip": true
+      }
+    }
+  },
+  "pages": [
+    {
+      "id": "main",
+      "clientActions": ["v.story_page = 'main';"],
+      "speaker": "curator",
+      "lines": [
+        "A pair of gloved hands unfolds from the dark. What catches your eye?"
+      ],
+      "input": {
+        "type": "option",
+        "vertical": true,
+        "options": [
+          {
+            "text": "See the shop",
+            "value": "shop",
+            "action": "q.dialogue.set_page('catalog');"
+          },
+          {
+            "text": "Talk",
+            "value": "talk",
+            "action": "q.dialogue.set_page('talk_1');"
+          },
+          {
+            "text": "Say goodbye",
+            "value": "goodbye",
+            "action": "q.dialogue.set_page('goodbye');"
+          }
+        ]
+      }
+    },
+    {
+      "id": "catalog",
+      "clientActions": ["v.story_page = 'catalog';"],
+      "speaker": "curator",
+      "lines": [
+        ""
+      ],
+      "input": {
+        "type": "option",
+        "vertical": true,
+        "options": [
+          {
+            "text": "Poké Ball  ·  3E",
+            "value": "poke_ball",
+            "action": [
+              "v.item_name = 'Poké Ball';",
+              "v.item_id = 'cobblemon:poke_ball';",
+              "v.item_price = 3;",
+              "q.dialogue.set_page('confirm');"
+            ]
+          },
+          {
+            "text": "Potion  ·  4E",
+            "value": "potion",
+            "action": [
+              "v.item_name = 'Potion';",
+              "v.item_id = 'cobblemon:potion';",
+              "v.item_price = 4;",
+              "q.dialogue.set_page('confirm');"
+            ]
+          },
+          {
+            "text": "Great Ball  ·  6E",
+            "value": "great_ball",
+            "action": [
+              "v.item_name = 'Great Ball';",
+              "v.item_id = 'cobblemon:great_ball';",
+              "v.item_price = 6;",
+              "q.dialogue.set_page('confirm');"
+            ]
+          },
+          {
+            "text": "Revive  ·  8E",
+            "value": "revive",
+            "action": [
+              "v.item_name = 'Revive';",
+              "v.item_id = 'cobblemon:revive';",
+              "v.item_price = 8;",
+              "q.dialogue.set_page('confirm');"
+            ]
+          },
+          {
+            "text": "Back",
+            "value": "back",
+            "action": "q.dialogue.set_page('main');"
+          }
+        ]
+      }
+    },
+    {
+      "id": "confirm",
+      "clientActions": ["v.story_page = 'confirm';"],
+      "speaker": "curator",
+      "lines": [
+        "Are you sure you want to buy",
+        {
+          "type": "expression",
+          "expression": "v.item_name"
+        },
+        {
+          "type": "expression",
+          "expression": "v.item_price + ' Emeralds'"
+        }
+      ],
+      "input": {
+        "type": "option",
+        "vertical": true,
+        "options": [
+          {
+            "text": "Yes",
+            "value": "yes",
+            "action": [
+              "t.wallet = 0;",
+              "for_each(t.stack, q.player.inventory, { t.stack.is_of('minecraft:emerald') ? { t.wallet = t.wallet + t.stack.count; }; });",
+              "t.wallet >= v.item_price ? { t.remaining = v.item_price; for_each(t.stack, q.player.inventory, { t.remaining > 0 && t.stack.is_of('minecraft:emerald') ? { t.take = math.min(t.remaining, t.stack.count); t.stack.shrink(t.take); t.remaining = t.remaining - t.take; }; }); q.player.give_item(v.item_id, true); q.dialogue.set_page('purchase_success'); } : { q.dialogue.set_page('purchase_failure'); };"
+            ]
+          },
+          {
+            "text": "No",
+            "value": "no",
+            "action": "q.dialogue.set_page('purchase_cancelled');"
+          }
+        ]
+      }
+    },
+    {
+      "id": "purchase_success",
+      "clientActions": ["v.story_page = 'purchase_success';"],
+      "speaker": "curator",
+      "lines": [
+        {
+          "type": "expression",
+          "expression": "'Purchased ' + v.item_name + '! The hand places it carefully in your inventory.'"
+        }
+      ],
+      "input": "q.dialogue.set_page('catalog');"
+    },
+    {
+      "id": "purchase_failure",
+      "clientActions": ["v.story_page = 'purchase_failure';"],
+      "speaker": "curator",
+      "lines": [
+        "Not enough Emeralds. The hand refuses the trade."
+      ],
+      "input": "q.dialogue.set_page('catalog');"
+    },
+    {
+      "id": "purchase_cancelled",
+      "clientActions": ["v.story_page = 'purchase_cancelled';"],
+      "speaker": "curator",
+      "lines": [
+        "The hand withdraws. Nothing changes hands."
+      ],
+      "input": "q.dialogue.set_page('catalog');"
+    },
+    {
+      "id": "talk_1",
+      "clientActions": ["v.story_page = 'talk_1';"],
+      "speaker": "curator",
+      "lines": [
+        "The hands move with practiced care. Every object here belonged to a traveler who stopped listening to the road."
+      ],
+      "input": "q.dialogue.set_page('talk_2');"
+    },
+    {
+      "id": "talk_2",
+      "clientActions": ["v.story_page = 'talk_2';"],
+      "speaker": "curator",
+      "lines": [
+        "Beyond town, the old path has begun returning things that were never lost. Keep your team close if you follow it."
+      ],
+      "input": "q.dialogue.set_page('main');"
+    },
+    {
+      "id": "goodbye",
+      "clientActions": ["v.story_page = 'goodbye';"],
+      "speaker": "curator",
+      "lines": [
+        "The fingers fold back into the closet. Return when something calls to you."
+      ],
+      "input": "q.dialogue.close();"
+    }
+  ]
+}

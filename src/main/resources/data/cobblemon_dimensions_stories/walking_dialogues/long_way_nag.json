@@ -1,0 +1,11 @@
+{
+  "pages": [
+    {
+      "id": "nag",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "We are barely out of the light. Keep walking, and stay where I can see your back." }
+      ]
+    }
+  ]
+}

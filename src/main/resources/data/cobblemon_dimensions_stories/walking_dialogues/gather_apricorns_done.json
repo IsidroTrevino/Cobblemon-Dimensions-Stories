@@ -1,0 +1,19 @@
+{
+  "pages": [
+    {
+      "id": "thanks",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "All eight, and not one of them bruised. You actually listened." }
+      ],
+      "next": "payment"
+    },
+    {
+      "id": "payment",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Here. And come back tomorrow, there's a room behind this closet I'd like you to see." }
+      ]
+    }
+  ]
+}

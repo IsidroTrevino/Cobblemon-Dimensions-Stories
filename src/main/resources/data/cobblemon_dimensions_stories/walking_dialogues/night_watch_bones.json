@@ -1,0 +1,38 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Good. Now sit down and listen, because the husks were the easy half." }
+      ],
+      "next": "reveal"
+    },
+    {
+      "id": "reveal",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "There are archers up on the ridge. Three that I have counted. They shoot at the lanterns, not at people, which frightens me more." }
+      ],
+      "options": [
+        { "text": { "text": "Three archers. Done." }, "next": "send" },
+        { "text": { "text": "Shooting lanterns? Why?" }, "next": "why" }
+      ]
+    },
+    {
+      "id": "why",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Because something behind them prefers the dark, and they are making room for it." }
+      ],
+      "next": "send"
+    },
+    {
+      "id": "send",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Go up the ridge. Break the three of them. Then come straight back down." }
+      ]
+    }
+  ]
+}

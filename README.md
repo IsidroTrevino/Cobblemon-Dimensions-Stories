@@ -1,35 +1,40 @@
-# Chilin Story
+# Cobblemon Dimensions Stories
 
-Chilin Story is a Cobblemon NPC/dialogue test flight. The built JAR contains:
+A Fabric addon that puts a quest layer on top of Cobblemon: story NPCs you can
+walk up to, dialogue that plays as a HUD overlay instead of locking you into a
+screen, a quest journal, and three arcade minigames the NPCs hand out.
 
-- two datapack-defined shopkeeper NPCs with branching dialogue;
-- the supplied Chilin and Hand Assets pixel-art textures as client resources;
-- a client-only renderer for the layered scene that Cobblemon's stock datapack screen cannot express.
+Quests, NPCs and dialogue are plain datapack JSON. The mod supplies the reload
+listeners that read them, plus the client-side renderers, because Cobblemon's
+stock dialogue screen cannot express the layered pixel-art scenes this uses.
 
-Only dialogues using the Chilin Story shop or hand backgrounds use a custom
-renderer. Every other Cobblemon dialogue keeps its normal UI.
+## What's in the box
+
+- **Quests** with multiple stages, item and kill objectives, escort/waypoint
+  steps, and rewards. Progress is per player and saved with the world.
+- **Story NPCs** placed from datapack functions. They show a marker overhead
+  when they have something for you, and walk back to their post if they drift.
+- **Walking dialogue** drawn as a HUD overlay, so you keep control of your
+  character mid-conversation. Text types out, portraits animate, choices slide
+  in above the bar.
+- **Quest journal** on a keybind, with a badge in the corner when something is
+  unread.
+- **Two shopkeepers**, Mara and The Curator, with branching catalog dialogue.
+  The Curator's shop runs a working Emerald transaction.
+- **Three minigames**: Arrow Pattern, Pokewrle, and Pokesweeper in Easy (9x9,
+  10 mines), Medium (12x12, 20) and Hard (16x16, 40). Each size keeps its own
+  best-time record.
 
 ## Compatibility
 
 - Minecraft 1.21.1
 - Fabric Loader 0.17.2 or newer
-- Cobblemon 1.8.0 or a compatible 1.8 development build
+- Fabric API
+- Cobblemon 1.8.x
 - Java 21
 
-The provided `Cobblemon-fabric-1.4.0+1.20.1.jar` is not compatible. Cobblemon
-1.4.0 predates the NPC/dialogue APIs used by this pack.
-
-## Quick test launch
-
-With the sibling `cobblemon-main` source workspace available, run:
-
-```bash
-./run-test-client.sh
-```
-
-This builds the addon, installs its JAR in the Fabric development client, and
-starts Minecraft 1.21.1 with Cobblemon. It uses the local Gradle caches so the
-launcher works offline after the first successful setup.
+Cobblemon 1.4.0 will not work. It predates the NPC and dialogue APIs this
+depends on.
 
 ## Build
 
@@ -37,51 +42,93 @@ launcher works offline after the first successful setup.
 ./gradlew build
 ```
 
-The recommended installable output is `build/libs/chilin-story-0.1.0.jar`.
-Install it on both the server and every client. The server consumes the
-NPC/dialogue data; clients consume the textures and layered renderer.
+Two things land in `build/`:
 
-The build also creates
-`build/distributions/chilin-story-0.1.0-datapack.zip` for a server that keeps
-story data in the world's `datapacks` folder. When using that split setup, the
-main JAR is still required on every client for the textures and custom screen.
+- `libs/cobblemon-dimensions-stories-0.1.0.jar` is the mod. Install it on the
+  server **and** on every client. The server reads the quest and NPC data, the
+  client needs the textures and the custom renderers.
+- `distributions/cobblemon-dimensions-stories-0.1.0-datapack.zip` is the story
+  data on its own, if you would rather keep it in the world's `datapacks`
+  folder and edit it without rebuilding. Clients still need the JAR either way.
 
-## Test in game
+## Running a dev client
 
-After launching Minecraft and opening a world with commands enabled:
+With the sibling `cobblemon-main` source workspace checked out next to this
+repo:
 
-1. Stand where the shopkeeper should appear.
-2. Run `/function chilin_story:spawn_shopkeeper`.
-3. Right-click Mara.
+```bash
+./run-test-client.sh     # macOS / Linux
+run-test-client.cmd      # Windows
+```
 
-To open the UI without spawning an NPC, run
-`/function chilin_story:open_shop`.
+That builds the addon, drops the JAR into the Fabric development client and
+launches Minecraft with Cobblemon. It uses the local Gradle caches, so it works
+offline once the first setup has succeeded.
 
-The Hand Assets shop can be tested separately:
+## Commands
 
-1. Run `/function chilin_story:spawn_hand_shopkeeper` to place The Curator, or
-   `/function chilin_story:open_hand_shop` to open it directly.
-2. Run `/give @s minecraft:emerald 64` to give yourself test funds.
-3. Choose `See the shop`, select a product, press `Buy`, and confirm the trade.
+All of these need permission level 2. `targets` is optional and defaults to the
+sender.
 
-The Hand shop uses Emeralds and ships with four sample products: Poké Ball
-(3), Potion (4), Great Ball (6), and Revive (8). A successful trade removes
-the exact price and gives the item, while insufficient funds leave the
-inventory unchanged.
+```
+/stories list                          list every loaded quest
+/stories start <dialogue> [targets]    play a walking dialogue
+/stories complete <quest> [targets]    force-complete a quest
+/stories reset [targets] [quest]       wipe one quest, or all of them
+/stories minigame <game> [targets]     pattern | pokewrle | pokesweeper |
+                                       pokesweeper_easy | pokesweeper_medium
+```
 
-The first click while text is typing reveals the entire line. A later click
-advances the dialogue. The pulsing arrow is shown only on pages that accept a
-continue click. The Hand shop additionally animates its opening, title decode,
-talking hand, refusal sequence, and successful-purchase bob.
+## Testing in game
 
-## Story editing
+Open a world with cheats on, then:
 
-Edit `src/main/resources/data/chilin_story/dialogues/shopkeeper.json` for Mara,
-or `src/main/resources/data/chilin_story/dialogues/hand_shopkeeper.json` for
-The Curator. Pages with an `option` input become button menus. Pages with a
-normal action string become click-to-continue story pages. The Hand shop's
-catalog item IDs, display names, prices, and Emerald transaction live in its
-dialogue file.
+1. Stand where the shopkeeper should go and run
+   `/function cobblemon_dimensions_stories:spawn_shopkeeper`. Right-click Mara.
+2. For The Curator, run
+   `/function cobblemon_dimensions_stories:spawn_hand_shopkeeper`.
+3. `/give @s minecraft:emerald 64` for test funds, then pick `See the shop`,
+   choose a product, press `Buy` and confirm.
 
-The character alternates between the casual and talking frames while letters
-appear, then switches to the smiling frame when the page is fully visible.
+To open a shop UI without spawning anything, use
+`cobblemon_dimensions_stories:open_shop` or
+`cobblemon_dimensions_stories:open_hand_shop`.
+
+The Curator's shop takes Emeralds and ships with four sample products: Poké
+Ball (3), Potion (4), Great Ball (6) and Revive (8). A successful trade removes
+the exact price and gives the item. Not enough Emeralds and the inventory is
+left alone.
+
+While text is typing, the first click reveals the whole line and the next one
+turns the page. The pulsing arrow only shows up on pages that actually accept a
+continue click.
+
+## Editing the story
+
+Everything lives under `src/main/resources/data/cobblemon_dimensions_stories/`:
+
+| Folder | What goes in it |
+| --- | --- |
+| `quests/` | quest definitions: stages, objectives, rewards |
+| `story_npcs/` | which NPC gives which quest, and where it stands |
+| `walking_dialogues/` | HUD dialogue pages, keyed by quest stage |
+| `dialogues/` | the two Cobblemon shop dialogues |
+| `npcs/` | Cobblemon NPC class definitions |
+| `function/` | spawn and open helpers |
+
+In the shop dialogues, a page with an `option` input becomes a button menu and
+a page with a plain action string becomes a click-to-continue story page. The
+Curator's catalog item IDs, display names, prices and the Emerald transaction
+all live in `dialogues/hand_shopkeeper.json`.
+
+## Notes for contributors
+
+Cobblemon is not a compile-time dependency here. Anything touching its species
+data, NPC classes or dialogue screens goes through reflection or a
+string-targeted mixin. That keeps the build from breaking every time Cobblemon
+reshuffles its internals, but it moves the failures to runtime, so test against
+a real client before shipping.
+
+GUI art is authored as 256x256 layered sheets and every layer is blitted whole
+at `(0, 0)`. The layers self-align that way and there is no per-sprite offset
+table to keep in sync.

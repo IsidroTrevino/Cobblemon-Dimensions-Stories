@@ -4,7 +4,7 @@ set -eu
 PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 COBBLEMON_SOURCE_DIR=${COBBLEMON_SOURCE_DIR:-"$PROJECT_DIR/../cobblemon-main"}
 JAVA_21_HOME=${JAVA_21_HOME:-$(/usr/libexec/java_home -v 21)}
-ADDON_JAR="$PROJECT_DIR/build/libs/chilin-story-0.1.0.jar"
+ADDON_JAR="$PROJECT_DIR/build/libs/cobblemon-dimensions-stories-0.1.0.jar"
 CLIENT_MODS_DIR="$COBBLEMON_SOURCE_DIR/fabric/runClient/mods"
 
 if [ ! -f "$COBBLEMON_SOURCE_DIR/gradlew" ]; then
@@ -12,13 +12,13 @@ if [ ! -f "$COBBLEMON_SOURCE_DIR/gradlew" ]; then
     exit 1
 fi
 
-echo "Building Chilin Story..."
+echo "Building Cobblemon Dimensions Stories..."
 env JAVA_HOME="$JAVA_21_HOME" "$PROJECT_DIR/gradlew" --offline build
 
-echo "Installing Chilin Story into the Fabric test client..."
+echo "Installing Cobblemon Dimensions Stories into the Fabric test client..."
 mkdir -p "$CLIENT_MODS_DIR"
-cp "$ADDON_JAR" "$CLIENT_MODS_DIR/chilin-story-0.1.0.jar"
+cp "$ADDON_JAR" "$CLIENT_MODS_DIR/cobblemon-dimensions-stories-0.1.0.jar"
 
-echo "Starting Minecraft 1.21.1 with Cobblemon and Chilin Story..."
+echo "Starting Minecraft 1.21.1 with Cobblemon and Cobblemon Dimensions Stories..."
 cd "$COBBLEMON_SOURCE_DIR"
 env JAVA_HOME="$JAVA_21_HOME" /bin/sh ./gradlew -PfabricOnly --offline :fabric:runClient

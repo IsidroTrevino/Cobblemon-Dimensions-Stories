@@ -1,0 +1,38 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Three bones. Clean ones. I will not explain the difference and you will not ask." }
+      ],
+      "next": "ask"
+    },
+    {
+      "id": "ask",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "There is something behind the closet wall that has been quiet for a long time. I would like it to stay quiet." }
+      ],
+      "options": [
+        { "text": { "text": "Three bones. Fine." }, "next": "send" },
+        { "text": { "text": "Behind the wall?" }, "next": "wall" }
+      ]
+    },
+    {
+      "id": "wall",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "The closet is older than the shop. The shop was built to hold the closet shut." }
+      ],
+      "next": "send"
+    },
+    {
+      "id": "send",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Bring them here. Do not put them in a chest. Do not put them in your pocket next to food." }
+      ]
+    }
+  ]
+}

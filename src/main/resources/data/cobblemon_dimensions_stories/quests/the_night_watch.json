@@ -1,0 +1,35 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.description" }
+  ],
+  "stages": [
+    {
+      "type": "kill",
+      "entity": "minecraft:zombie",
+      "count": 6,
+      "hint": { "text": "Clear the husks from the treeline." },
+      "dialogue": "cobblemon_dimensions_stories:night_watch_brief",
+      "reminder": "cobblemon_dimensions_stories:night_watch_nag"
+    },
+    {
+      "type": "kill",
+      "entity": "minecraft:skeleton",
+      "count": 3,
+      "hint": { "text": "Break the archers on the ridge." },
+      "dialogue": "cobblemon_dimensions_stories:night_watch_bones",
+      "reminder": "cobblemon_dimensions_stories:night_watch_bones_nag"
+    },
+    {
+      "type": "dialogue",
+      "hint": { "text": "Report back to Mara." },
+      "dialogue": "cobblemon_dimensions_stories:night_watch_thanks"
+    }
+  ],
+  "rewards": [
+    { "type": "item", "item": "minecraft:emerald", "count": 8 },
+    { "type": "item", "item": "cobblemon:great_ball", "count": 5 }
+  ],
+  "requires": ["cobblemon_dimensions_stories:the_curators_favor"],
+  "order": 40
+}

@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Quiet again. Good. Now: one true thing, as promised." }
+      ],
+      "next": "choice"
+    },
+    {
+      "id": "choice",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "You may have the true thing, or you may have what is on the shelf behind it. Not both." }
+      ],
+      "options": [
+        { "text": { "text": "The true thing." }, "next": "truth" },
+        { "text": { "text": "What's on the shelf." }, "next": "shelf" }
+      ]
+    },
+    {
+      "id": "truth",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "I did not build the closet, and I did not choose to mind it. Somebody handed me the key and walked away, exactly as I am handing you this." }
+      ],
+      "next": "close"
+    },
+    {
+      "id": "shelf",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Sensible. The true thing would only have kept you up, and you have earned a night's sleep." }
+      ],
+      "next": "close"
+    },
+    {
+      "id": "close",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Go on. The shop closes when I say it closes, and I am saying it now." }
+      ]
+    }
+  ]
+}

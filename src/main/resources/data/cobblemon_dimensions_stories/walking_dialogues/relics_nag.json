@@ -1,0 +1,11 @@
+{
+  "pages": [
+    {
+      "id": "nag",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Three. Bones. The wall does not get quieter while you stand here looking at me." }
+      ]
+    }
+  ]
+}

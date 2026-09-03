@@ -1,0 +1,12 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.first_steps.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.first_steps.description" }
+  ],
+  "objective": { "type": "dialogue" },
+  "rewards": [
+    { "type": "item", "item": "cobblemon:poke_ball", "count": 5 }
+  ],
+  "dialogue": "cobblemon_dimensions_stories:first_steps",
+  "order": 10
+}

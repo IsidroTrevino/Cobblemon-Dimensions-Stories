@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Stop. Turn around. You cannot see the stall from here, can you." }
+      ],
+      "next": "why"
+    },
+    {
+      "id": "why",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "My grandmother walked this far every morning. I have been telling people the posts were the reason I stayed." }
+      ],
+      "options": [
+        { "text": { "text": "And the real reason?" }, "next": "truth" },
+        { "text": { "text": "You don't have to say it." }, "next": "kind" }
+      ]
+    },
+    {
+      "id": "truth",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "I was frightened. That is all it ever was. Thank you for making it boring." }
+      ],
+      "next": "close"
+    },
+    {
+      "id": "kind",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "No. But I would like to have said it out loud once, in a field, with a witness." }
+      ],
+      "next": "close"
+    },
+    {
+      "id": "close",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Right. Back before the lanterns go. I have a stall to open in the morning." }
+      ]
+    }
+  ]
+}

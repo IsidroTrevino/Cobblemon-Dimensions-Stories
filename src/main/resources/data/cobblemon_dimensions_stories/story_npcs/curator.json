@@ -1,0 +1,10 @@
+{
+  "npc_class": "cobblemon_dimensions_stories:hand_shopkeeper",
+  "name": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+  "quests": [
+    "cobblemon_dimensions_stories:gather_apricorns",
+    "cobblemon_dimensions_stories:the_curators_favor",
+    "cobblemon_dimensions_stories:relics_of_the_closet"
+  ],
+  "idle_dialogue": "cobblemon_dimensions_stories:arcade_curator"
+}

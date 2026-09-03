@@ -1,0 +1,38 @@
+{
+  "pages": [
+    {
+      "id": "open",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "I have not walked past the second lantern post in four years. I would like to, today, with someone in front of me." }
+      ],
+      "next": "ask"
+    },
+    {
+      "id": "ask",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Just walk. I will keep up. Do not lose me and do not stop to dig a hole." }
+      ],
+      "options": [
+        { "text": { "text": "Stay close, then." }, "next": "go" },
+        { "text": { "text": "How far are we going?" }, "next": "far" }
+      ]
+    },
+    {
+      "id": "far",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Far enough that I cannot see the awning. That is the whole point of it." }
+      ],
+      "next": "go"
+    },
+    {
+      "id": "go",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Lead on. If I fall too far behind I will turn around, and I will not admit why." }
+      ]
+    }
+  ]
+}

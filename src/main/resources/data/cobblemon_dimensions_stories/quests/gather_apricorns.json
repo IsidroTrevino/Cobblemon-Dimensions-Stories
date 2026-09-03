@@ -1,0 +1,22 @@
+{
+  "title": { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.title" },
+  "description": [
+    { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.description" }
+  ],
+  "objective": {
+    "type": "item",
+    "item": "minecraft:apple",
+    "count": 8,
+    "consume": true,
+    "hint": { "text": "Bring 8 apples to the Curator." }
+  },
+  "rewards": [
+    { "type": "item", "item": "minecraft:emerald", "count": 6 },
+    { "type": "item", "item": "cobblemon:great_ball", "count": 3 }
+  ],
+  "dialogue": "cobblemon_dimensions_stories:gather_apricorns",
+  "reminder_dialogue": "cobblemon_dimensions_stories:gather_apricorns_reminder",
+  "completion_dialogue": "cobblemon_dimensions_stories:gather_apricorns_done",
+  "requires": ["cobblemon_dimensions_stories:first_steps"],
+  "order": 20
+}

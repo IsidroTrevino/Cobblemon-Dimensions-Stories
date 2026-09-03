@@ -1,0 +1,47 @@
+{
+  "pages": [
+    {
+      "id": "greeting",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "The closet is quiet. Quiet closets make me restless." }
+      ],
+      "next": "menu"
+    },
+    {
+      "id": "menu",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Humour me. Pick a game and I'll pay out of the good drawer." }
+      ],
+      "options": [
+        { "text": { "text": "The arrow drill." }, "next": "pattern_go" },
+        { "text": { "text": "Pokewrle." }, "next": "pokewrle_go" },
+        { "text": { "text": "Another time." }, "next": "decline" }
+      ]
+    },
+    {
+      "id": "pattern_go",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Arrow keys, in order, before the bar runs out. Miss one and you start the pattern again." }
+      ],
+      "minigame": "pattern"
+    },
+    {
+      "id": "pokewrle_go",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Five guesses. I'll tell you what you got right and nothing more." }
+      ],
+      "minigame": "pokewrle"
+    },
+    {
+      "id": "decline",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Fine. The drawer stays shut." }
+      ]
+    }
+  ]
+}

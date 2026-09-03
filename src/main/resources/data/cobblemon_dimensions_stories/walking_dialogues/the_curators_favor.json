@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "id": "invitation",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Keep moving. The room only opens for people who are already on their way somewhere." }
+      ],
+      "next": "choice"
+    },
+    {
+      "id": "choice",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Last chance to turn around. Do you want to see what I keep back there?" }
+      ],
+      "options": [
+        { "text": { "text": "Show me." }, "next": "reveal" },
+        { "text": { "text": "Not today." }, "next": "decline" }
+      ]
+    },
+    {
+      "id": "reveal",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Then take this first. You'll want something in your pocket before you look." }
+      ],
+      "next": "closing"
+    },
+    {
+      "id": "decline",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Sensible. The door will still be here." }
+      ],
+      "next": "closing"
+    },
+    {
+      "id": "closing",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Either way, keep walking. Standing still is the only real mistake." }
+      ]
+    }
+  ]
+}

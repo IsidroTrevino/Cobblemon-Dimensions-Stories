@@ -1,0 +1,11 @@
+{
+  "pages": [
+    {
+      "id": "nag",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "lines": [
+        { "text": "Four spiders. I am counting them by the noise, and the noise has not gone down enough." }
+      ]
+    }
+  ]
+}

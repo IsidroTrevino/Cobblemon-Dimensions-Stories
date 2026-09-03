@@ -1,0 +1,71 @@
+{
+  "pages": [
+    {
+      "id": "greeting",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Nothing needs doing right now, which means we're allowed to waste some time." }
+      ],
+      "next": "menu"
+    },
+    {
+      "id": "menu",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "I've got two games going. Want to play one?" }
+      ],
+      "options": [
+        { "text": { "text": "Show me the arrow game." }, "next": "pattern_brief" },
+        { "text": { "text": "What's Pokewrle?" }, "next": "pokewrle_brief" },
+        { "text": { "text": "Not right now." }, "next": "decline" }
+      ]
+    },
+    {
+      "id": "pattern_brief",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "A run of arrows lights up. Type it back on the arrow keys before the timer empties." },
+        { "text": "Every level you clear is faster than the last, and a clean streak pays better." }
+      ],
+      "options": [
+        { "text": { "text": "Start it." }, "next": "pattern_go" },
+        { "text": { "text": "Go back." }, "next": "menu" }
+      ]
+    },
+    {
+      "id": "pattern_go",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Eyes up. Here it comes." }
+      ],
+      "minigame": "pattern"
+    },
+    {
+      "id": "pokewrle_brief",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "I think of a Pokemon. You get five guesses, and each one tells you a little more." },
+        { "text": "Green means you nailed that detail. An arrow means you're close but off." }
+      ],
+      "options": [
+        { "text": { "text": "Start it." }, "next": "pokewrle_go" },
+        { "text": { "text": "Go back." }, "next": "menu" }
+      ]
+    },
+    {
+      "id": "pokewrle_go",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Alright. I've got one in mind already." }
+      ],
+      "minigame": "pokewrle"
+    },
+    {
+      "id": "decline",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Suit yourself. I'll be here when the walking gets boring." }
+      ]
+    }
+  ]
+}

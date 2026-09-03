@@ -1,0 +1,55 @@
+{
+  "pages": [
+    {
+      "id": "greeting",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "You keep circling the edge of town like you're waiting for permission. You don't need it." }
+      ],
+      "next": "question"
+    },
+    {
+      "id": "question",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "So tell me honestly. Are you here to travel, or are you here to hide?" }
+      ],
+      "options": [
+        { "text": { "text": "I want to travel." }, "next": "travel" },
+        { "text": { "text": "I haven't decided." }, "next": "undecided" },
+        { "text": { "text": "Maybe a little of both." }, "next": "both" }
+      ]
+    },
+    {
+      "id": "travel",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Good. Keep walking while I talk, I'm not going to hold you still for a speech." }
+      ],
+      "next": "farewell"
+    },
+    {
+      "id": "undecided",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "That's an answer too. Most people who say that end up going the furthest." }
+      ],
+      "next": "farewell"
+    },
+    {
+      "id": "both",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Honest. I like that better than brave." }
+      ],
+      "next": "farewell"
+    },
+    {
+      "id": "farewell",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "lines": [
+        { "text": "Take these. When you're ready for real work, the Curator keeps a closet full of it." }
+      ]
+    }
+  ]
+}
