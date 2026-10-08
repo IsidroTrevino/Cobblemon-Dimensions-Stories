@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "nag",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Eight apples. You are holding fewer than eight apples. I can count from here." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "where",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "The orchard is east of the bridge. Mara will walk out with you if you ask nicely." }
       ]

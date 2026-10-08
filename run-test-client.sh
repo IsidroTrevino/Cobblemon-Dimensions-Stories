@@ -2,9 +2,8 @@
 set -eu
 
 PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-COBBLEMON_SOURCE_DIR=${COBBLEMON_SOURCE_DIR:-"$PROJECT_DIR/../cobblemon-main"}
+COBBLEMON_SOURCE_DIR=${COBBLEMON_SOURCE_DIR:-"$PROJECT_DIR/../cobblemon"}
 JAVA_21_HOME=${JAVA_21_HOME:-$(/usr/libexec/java_home -v 21)}
-ADDON_JAR="$PROJECT_DIR/build/libs/cobblemon-dimensions-stories-0.1.0.jar"
 CLIENT_MODS_DIR="$COBBLEMON_SOURCE_DIR/fabric/runClient/mods"
 
 if [ ! -f "$COBBLEMON_SOURCE_DIR/gradlew" ]; then
@@ -12,13 +11,13 @@ if [ ! -f "$COBBLEMON_SOURCE_DIR/gradlew" ]; then
     exit 1
 fi
 
-echo "Building Cobblemon Dimensions Stories..."
-env JAVA_HOME="$JAVA_21_HOME" "$PROJECT_DIR/gradlew" --offline build
+for installed_jar in "$CLIENT_MODS_DIR"/cobblemon-dimensions-stories*.jar; do
+    if [ -f "$installed_jar" ]; then
+        echo "Remove Stories from the test client's mods folder before testing: $installed_jar" >&2
+        exit 1
+    fi
+done
 
-echo "Installing Cobblemon Dimensions Stories into the Fabric test client..."
-mkdir -p "$CLIENT_MODS_DIR"
-cp "$ADDON_JAR" "$CLIENT_MODS_DIR/cobblemon-dimensions-stories-0.1.0.jar"
-
-echo "Starting Minecraft 1.21.1 with Cobblemon and Cobblemon Dimensions Stories..."
+echo "Starting the Cobblemon client without Stories. Join the dedicated test server."
 cd "$COBBLEMON_SOURCE_DIR"
 env JAVA_HOME="$JAVA_21_HOME" /bin/sh ./gradlew -PfabricOnly --offline :fabric:runClient

@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.first_steps.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.first_steps.title", "fallback": "First Steps" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.first_steps.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.first_steps.description", "fallback": "Mara has been watching you wander the outskirts of town. She says there is something you should hear before you go any further." }
   ],
   "objective": { "type": "dialogue" },
   "rewards": [

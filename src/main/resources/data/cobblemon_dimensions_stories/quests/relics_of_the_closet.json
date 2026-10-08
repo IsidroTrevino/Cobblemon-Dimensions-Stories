@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.title", "fallback": "Relics of the Closet" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.relics_of_the_closet.description", "fallback": "There is something behind the Curator's closet wall that has been quiet for a long time. He would like it to stay that way, and he is willing to trade for the help." }
   ],
   "stages": [
     {

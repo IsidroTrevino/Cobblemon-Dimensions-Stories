@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "I have not walked past the second lantern post in four years. I would like to, today, with someone in front of me." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "ask",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Just walk. I will keep up. Do not lose me and do not stop to dig a hole." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "far",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Far enough that I cannot see the awning. That is the whole point of it." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "go",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Lead on. If I fall too far behind I will turn around, and I will not admit why." }
       ]

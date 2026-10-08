@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "thanks",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "All eight, and not one of them bruised. You actually listened." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "payment",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Here. And come back tomorrow, there's a room behind this closet I'd like you to see." }
       ]

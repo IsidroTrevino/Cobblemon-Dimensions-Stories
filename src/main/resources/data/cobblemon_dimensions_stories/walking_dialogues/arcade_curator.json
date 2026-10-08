@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "greeting",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "The closet is quiet. Quiet closets make me restless." }
       ],
@@ -10,35 +10,52 @@
     },
     {
       "id": "menu",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
-        { "text": "Humour me. Pick a game and I'll pay out of the good drawer." }
+        { "text": "Humour me. Pick a game and I'll pay out of the good drawer. Sneak-right-click me to browse the shop." }
       ],
       "options": [
         { "text": { "text": "The arrow drill." }, "next": "pattern_go" },
         { "text": { "text": "Pokewrle." }, "next": "pokewrle_go" },
+        { "text": { "text": "Pokesweeper." }, "next": "pokesweeper_menu" },
         { "text": { "text": "Another time." }, "next": "decline" }
       ]
     },
     {
       "id": "pattern_go",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
-        { "text": "Arrow keys, in order, before the bar runs out. Miss one and you start the pattern again." }
+        { "text": "Click the direction buttons in order before time runs out. Miss one and you start the pattern again." }
       ],
       "minigame": "pattern"
     },
     {
       "id": "pokewrle_go",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
-        { "text": "Five guesses. I'll tell you what you got right and nothing more." }
+        { "text": "Six guesses. Use the Guess in chat button and type a Pokemon's name. I'll tell you what you got right and nothing more." }
       ],
       "minigame": "pokewrle"
     },
     {
+      "id": "pokesweeper_menu",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
+      "lines": [
+        { "text": "Left-click to dig or chord an open number. Right-click to flag. Use the navigation arrows to explore the whole field." }
+      ],
+      "options": [
+        { "text": { "text": "Easy: 9 by 9, 10 TNT." }, "next": "pokesweeper_easy" },
+        { "text": { "text": "Medium: 12 by 12, 20 TNT." }, "next": "pokesweeper_medium" },
+        { "text": { "text": "Hard: 16 by 16, 40 TNT." }, "next": "pokesweeper_hard" },
+        { "text": { "text": "Go back." }, "next": "menu" }
+      ]
+    },
+    { "id": "pokesweeper_easy", "lines": [{ "text": "A small drawer of TNT." }], "minigame": "pokesweeper_easy" },
+    { "id": "pokesweeper_medium", "lines": [{ "text": "Choose your steps carefully." }], "minigame": "pokesweeper_medium" },
+    { "id": "pokesweeper_hard", "lines": [{ "text": "The whole drawer is yours." }], "minigame": "pokesweeper" },
+    {
       "id": "decline",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Fine. The drawer stays shut." }
       ]

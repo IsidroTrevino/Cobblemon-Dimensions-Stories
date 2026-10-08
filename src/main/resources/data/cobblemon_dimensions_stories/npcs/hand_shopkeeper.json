@@ -2,7 +2,7 @@
   "hitbox": "player",
   "resourceIdentifier": "cobblemon:standard",
   "names": [
-    "npc.cobblemon_dimensions_stories.hand_shopkeeper"
+    "The Curator"
   ],
   "interaction": {
     "type": "dialogue",

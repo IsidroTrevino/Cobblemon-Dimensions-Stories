@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Ah. That is the wrong sound entirely." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "explain",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Four of them came through the crawlspace while you were out. They are between me and the closet, which is a very poor arrangement." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "run",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "And leave the closet unattended? I would rather be bitten. Repeatedly." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "send",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Four. Then come back and I will tell you one true thing about the closet. One." }
       ]

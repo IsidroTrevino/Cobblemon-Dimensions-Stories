@@ -1,6 +1,7 @@
 package com.cobblemondimensions.stories.npc;
 
-import com.cobblemondimensions.stories.net.QuestMarkersS2C;
+import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
+import com.cobblemondimensions.stories.ui.StoriesText;
 import com.cobblemondimensions.stories.quest.Quest;
 import com.cobblemondimensions.stories.quest.QuestDefinitions;
 import com.cobblemondimensions.stories.quest.QuestObjective;
@@ -12,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -73,6 +73,12 @@ public final class StoryNpcs {
         }
 
         StoryNpc npc = found.get();
+        ServerDialogueService.cancel(player);
+        // Cobblemon already knows how to open this NPC's shop dialogue on an
+        // ordinary client. Reserve normal interaction for story progression.
+        if (player.isShiftKeyDown()) {
+            return false;
+        }
         int speaker = entity.getId();
         for (ResourceLocation questId : npc.quests()) {
             Optional<Quest> maybe = QuestDefinitions.get().byId(questId);
@@ -117,7 +123,7 @@ public final class StoryNpcs {
         return false;
     }
 
-    /** The client reported its walking dialogue closed. Frees the NPC to move again. */
+    /** The server dialogue session closed. Frees the NPC to move again. */
     public static void endConversation(ServerPlayer player) {
         CONVERSATIONS.values().removeIf(conversation -> conversation.player().equals(player.getUUID()));
     }
@@ -143,7 +149,7 @@ public final class StoryNpcs {
         // two players in range of the same NPC must not both drive it
         Set<UUID> alreadyMoved = new HashSet<>();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            Map<Integer, Integer> markers = new HashMap<>();
+            Map<Entity, QuestMarker> markers = new HashMap<>();
             AABB box = player.getBoundingBox().inflate(SCAN_RADIUS);
             for (Entity entity : player.level().getEntities(player, box)) {
                 Optional<StoryNpc> found = resolve(entity);
@@ -152,17 +158,31 @@ public final class StoryNpcs {
                 }
 
                 StoryNpc npc = found.get();
+                if (entity.getCustomName() != null) {
+                    var readableName = StoriesText.resolve(entity.getCustomName());
+                    if (!readableName.equals(entity.getCustomName())) {
+                        entity.setCustomName(readableName);
+                    }
+                }
                 TRACKED.add(entity.getUUID());
                 QuestMarker marker = markerFor(player, npc);
                 if (marker != QuestMarker.NONE) {
-                    markers.put(entity.getId(), marker.ordinal());
+                    markers.put(entity, marker);
                 }
                 if (entity instanceof PathfinderMob mob && alreadyMoved.add(entity.getUUID())) {
                     tickMovement(mob, npc, player, gameTime);
                 }
             }
-            ServerPlayNetworking.send(player, new QuestMarkersS2C(markers));
+            ServerQuestMarkers.update(player, markers);
         }
+    }
+
+    public static void stop() {
+        ROUTES.clear();
+        CONVERSATIONS.clear();
+        TRACKED.clear();
+        npcType = null;
+        npcTypeResolved = false;
     }
 
     /** Strongest marker any of this NPC's quests earns for {@code player}. */

@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "The ridge is quiet. I stood outside for an hour last night and nothing looked back at me." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "pay",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Take this. And take the fact that I sleep now, which is worth more than the emeralds." }
       ]

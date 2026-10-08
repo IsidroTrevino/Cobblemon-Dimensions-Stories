@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "request",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Eight apples. Ripe ones, not the bruised ones you find under the tree." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "why",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Don't ask what I do with them. Ask instead whether you want to be paid." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "secret",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "I asked you not to ask. Now we both have to live with that." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "deal",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Bring them straight back to me. Don't leave them in a chest to rot." }
       ]

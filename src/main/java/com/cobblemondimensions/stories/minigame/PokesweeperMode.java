@@ -1,8 +1,7 @@
 package com.cobblemondimensions.stories.minigame;
 
 /**
- * Board sizes for Pokesweeper. The client deals the field from these; the server
- * only needs {@link #safeCells()} to tell a full sweep from a partial one.
+ * Server-owned board dimensions and mine counts, with one saved record per difficulty.
  */
 public enum PokesweeperMode {
     EASY(Minigame.POKESWEEPER_EASY, 9, 9, 10),

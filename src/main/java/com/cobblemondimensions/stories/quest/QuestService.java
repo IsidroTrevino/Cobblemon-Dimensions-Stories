@@ -1,16 +1,13 @@
 package com.cobblemondimensions.stories.quest;
 
 import com.cobblemondimensions.stories.dialogue.WalkingDialogueDefinitions;
-import com.cobblemondimensions.stories.net.QuestSyncS2C;
-import com.cobblemondimensions.stories.net.StartWalkingDialogueS2C;
-import com.cobblemondimensions.stories.npc.StoryNpcDefinitions;
+import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
+import com.cobblemondimensions.stories.ui.QuestJournal;
+import com.cobblemondimensions.stories.ui.StoriesText;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,18 +76,9 @@ public final class QuestService {
         return unlocked ? QuestStatus.AVAILABLE : QuestStatus.LOCKED;
     }
 
-    /** Pushes the full quest list, statuses, progress and giver names to one player. */
+    /** Refreshes the server-controlled journal and its quest notices. */
     public static void sync(ServerPlayer player) {
-        List<Quest> quests = QuestDefinitions.get().all();
-        QuestSaveData data = QuestSaveData.get(player.server);
-        Map<ResourceLocation, Component> givers = new HashMap<>();
-        Map<ResourceLocation, QuestProgress> progress = new HashMap<>();
-        for (Quest quest : quests) {
-            StoryNpcDefinitions.get().questGiver(quest.id())
-                .ifPresent(npc -> givers.put(quest.id(), npc.name()));
-            progress.put(quest.id(), data.progressOf(player.getUUID(), quest.id()));
-        }
-        ServerPlayNetworking.send(player, new QuestSyncS2C(quests, statuses(player), progress, givers));
+        QuestJournal.refresh(player);
     }
 
     public static void syncAll(MinecraftServer server) {
@@ -124,7 +112,7 @@ public final class QuestService {
         QuestObjective objective = quest.stage(progress.stage());
         if (status(player, quest) != QuestStatus.ACTIVE || !isSatisfied(player, quest, objective)) {
             player.displayClientMessage(
-                Component.translatable("message.cobblemon_dimensions_stories.objective_unfinished")
+                StoriesText.translatable("message.cobblemon_dimensions_stories.objective_unfinished")
                     .withStyle(ChatFormatting.RED),
                 true
             );
@@ -152,7 +140,7 @@ public final class QuestService {
             .setProgress(player.getUUID(), quest.id(), new QuestProgress(next, 0));
         sync(player);
         player.displayClientMessage(
-            Component.translatable("message.cobblemon_dimensions_stories.stage_complete", next, quest.stageCount())
+            StoriesText.translatable("message.cobblemon_dimensions_stories.stage_complete", next, quest.stageCount())
                 .withStyle(ChatFormatting.YELLOW),
             true
         );
@@ -179,7 +167,7 @@ public final class QuestService {
         quest.rewards().forEach(reward -> grant(player, reward));
         sync(player);
         player.displayClientMessage(
-            Component.translatable("message.cobblemon_dimensions_stories.quest_complete", quest.title())
+            StoriesText.translatable("message.cobblemon_dimensions_stories.quest_complete", quest.title())
                 .withStyle(ChatFormatting.GOLD),
             false
         );
@@ -235,11 +223,11 @@ public final class QuestService {
         int speaker
     ) {
         WalkingDialogueDefinitions.get().byId(dialogueId).ifPresent(dialogue ->
-            ServerPlayNetworking.send(player, new StartWalkingDialogueS2C(dialogue, questId, speaker)));
+            ServerDialogueService.start(player, dialogue, questId, speaker));
     }
 
     /**
-     * Client says a dialogue ended. {@code completed} is false when the player
+     * The server dialogue session ended. {@code completed} is false when the player
      * bailed out part way; that changes nothing and the giver replays the line
      * on the next interaction.
      */
@@ -281,7 +269,7 @@ public final class QuestService {
             data.setProgress(player.getUUID(), quest.id(), new QuestProgress(progress.stage(), counted));
             sync(player);
             player.displayClientMessage(
-                Component.translatable(
+                StoriesText.translatable(
                     "message.cobblemon_dimensions_stories.progress", quest.title(), counted, objective.required()
                 ).withStyle(ChatFormatting.AQUA),
                 true
@@ -306,7 +294,7 @@ public final class QuestService {
         sync(player);
         if (reached >= objective.required()) {
             player.displayClientMessage(
-                Component.translatable("message.cobblemon_dimensions_stories.escort_done", quest.title())
+                StoriesText.translatable("message.cobblemon_dimensions_stories.escort_done", quest.title())
                     .withStyle(ChatFormatting.AQUA),
                 true
             );

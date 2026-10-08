@@ -1,9 +1,9 @@
 {
-  "background": "cobblemon_dimensions_stories:textures/gui/shop/shop_main.png",
+  "background": "cobblemon:textures/gui/dialogue/dialogue_box.png",
   "escapeAction": "q.dialogue.close();",
   "speakers": {
     "shopkeeper": {
-      "name": "npc.cobblemon_dimensions_stories.shopkeeper",
+      "name": {"translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara"},
       "gibber": {
         "graduallyShowText": false,
         "allowSkip": true

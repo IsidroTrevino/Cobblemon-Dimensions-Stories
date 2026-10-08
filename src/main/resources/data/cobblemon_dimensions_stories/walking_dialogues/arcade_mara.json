@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "greeting",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Nothing needs doing right now, which means we're allowed to waste some time." }
       ],
@@ -10,21 +10,22 @@
     },
     {
       "id": "menu",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
-        { "text": "I've got two games going. Want to play one?" }
+        { "text": "I've got three games going. Want to play one? Sneak-right-click me to browse the shop." }
       ],
       "options": [
         { "text": { "text": "Show me the arrow game." }, "next": "pattern_brief" },
         { "text": { "text": "What's Pokewrle?" }, "next": "pokewrle_brief" },
+        { "text": { "text": "Show me Pokesweeper." }, "next": "pokesweeper_menu" },
         { "text": { "text": "Not right now." }, "next": "decline" }
       ]
     },
     {
       "id": "pattern_brief",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
-        { "text": "A run of arrows lights up. Type it back on the arrow keys before the timer empties." },
+        { "text": "A run of arrows appears. Click the direction buttons in order before the timer empties." },
         { "text": "Every level you clear is faster than the last, and a clean streak pays better." }
       ],
       "options": [
@@ -34,7 +35,7 @@
     },
     {
       "id": "pattern_go",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Eyes up. Here it comes." }
       ],
@@ -42,9 +43,9 @@
     },
     {
       "id": "pokewrle_brief",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
-        { "text": "I think of a Pokemon. You get five guesses, and each one tells you a little more." },
+        { "text": "I think of a Pokemon. You get six guesses, and each one tells you a little more." },
         { "text": "Green means you nailed that detail. An arrow means you're close but off." }
       ],
       "options": [
@@ -54,15 +55,31 @@
     },
     {
       "id": "pokewrle_go",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Alright. I've got one in mind already." }
       ],
       "minigame": "pokewrle"
     },
     {
+      "id": "pokesweeper_menu",
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
+      "lines": [
+        { "text": "Left-click to dig, right-click to flag. Click an open number to chord when its surrounding flags match. The navigation arrows show the rest of the field." }
+      ],
+      "options": [
+        { "text": { "text": "Easy: 9 by 9, 10 TNT." }, "next": "pokesweeper_easy" },
+        { "text": { "text": "Medium: 12 by 12, 20 TNT." }, "next": "pokesweeper_medium" },
+        { "text": { "text": "Hard: 16 by 16, 40 TNT." }, "next": "pokesweeper_hard" },
+        { "text": { "text": "Go back." }, "next": "menu" }
+      ]
+    },
+    { "id": "pokesweeper_easy", "lines": [{ "text": "Start with a small field." }], "minigame": "pokesweeper_easy" },
+    { "id": "pokesweeper_medium", "lines": [{ "text": "Watch those corners." }], "minigame": "pokesweeper_medium" },
+    { "id": "pokesweeper_hard", "lines": [{ "text": "Sweep every safe cell." }], "minigame": "pokesweeper" },
+    {
       "id": "decline",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Suit yourself. I'll be here when the walking gets boring." }
       ]

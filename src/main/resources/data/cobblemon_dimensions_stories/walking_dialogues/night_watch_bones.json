@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Good. Now sit down and listen, because the husks were the easy half." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "reveal",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "There are archers up on the ridge. Three that I have counted. They shoot at the lanterns, not at people, which frightens me more." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "why",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Because something behind them prefers the dark, and they are making room for it." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "send",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Go up the ridge. Break the three of them. Then come straight back down." }
       ]

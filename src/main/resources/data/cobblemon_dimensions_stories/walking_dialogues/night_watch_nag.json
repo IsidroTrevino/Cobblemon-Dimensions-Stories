@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "nag",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Still counting. Six husks, and I would rather you came back tired than brave." }
       ]

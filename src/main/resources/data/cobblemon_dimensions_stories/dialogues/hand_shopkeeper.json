@@ -1,9 +1,9 @@
 {
-  "background": "cobblemon_dimensions_stories:textures/gui/hand/hand_illustration_background.png",
+  "background": "cobblemon:textures/gui/dialogue/dialogue_box.png",
   "escapeAction": "q.dialogue.close();",
   "speakers": {
     "curator": {
-      "name": "npc.cobblemon_dimensions_stories.hand_shopkeeper",
+      "name": {"translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator"},
       "gibber": {
         "graduallyShowText": false,
         "allowSkip": true
@@ -13,7 +13,6 @@
   "pages": [
     {
       "id": "main",
-      "clientActions": ["v.story_page = 'main';"],
       "speaker": "curator",
       "lines": [
         "A pair of gloved hands unfolds from the dark. What catches your eye?"
@@ -42,7 +41,6 @@
     },
     {
       "id": "catalog",
-      "clientActions": ["v.story_page = 'catalog';"],
       "speaker": "curator",
       "lines": [
         ""
@@ -101,7 +99,6 @@
     },
     {
       "id": "confirm",
-      "clientActions": ["v.story_page = 'confirm';"],
       "speaker": "curator",
       "lines": [
         "Are you sure you want to buy",
@@ -137,7 +134,6 @@
     },
     {
       "id": "purchase_success",
-      "clientActions": ["v.story_page = 'purchase_success';"],
       "speaker": "curator",
       "lines": [
         {
@@ -149,7 +145,6 @@
     },
     {
       "id": "purchase_failure",
-      "clientActions": ["v.story_page = 'purchase_failure';"],
       "speaker": "curator",
       "lines": [
         "Not enough Emeralds. The hand refuses the trade."
@@ -158,7 +153,6 @@
     },
     {
       "id": "purchase_cancelled",
-      "clientActions": ["v.story_page = 'purchase_cancelled';"],
       "speaker": "curator",
       "lines": [
         "The hand withdraws. Nothing changes hands."
@@ -167,7 +161,6 @@
     },
     {
       "id": "talk_1",
-      "clientActions": ["v.story_page = 'talk_1';"],
       "speaker": "curator",
       "lines": [
         "The hands move with practiced care. Every object here belonged to a traveler who stopped listening to the road."
@@ -176,7 +169,6 @@
     },
     {
       "id": "talk_2",
-      "clientActions": ["v.story_page = 'talk_2';"],
       "speaker": "curator",
       "lines": [
         "Beyond town, the old path has begun returning things that were never lost. Keep your team close if you follow it."
@@ -185,7 +177,6 @@
     },
     {
       "id": "goodbye",
-      "clientActions": ["v.story_page = 'goodbye';"],
       "speaker": "curator",
       "lines": [
         "The fingers fold back into the closet. Return when something calls to you."

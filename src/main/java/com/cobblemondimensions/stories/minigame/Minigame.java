@@ -4,8 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 /**
- * Minigames an NPC can start. Ordinals go on the wire (see the idMapper codecs
- * in OpenMinigameC2S and StartMinigameS2C), so new constants go on the end.
+ * Minigames an NPC can start. Serialized names also key existing saved records.
  */
 public enum Minigame implements StringRepresentable {
     /** Repeat a generated arrow pattern before the timer runs out. */

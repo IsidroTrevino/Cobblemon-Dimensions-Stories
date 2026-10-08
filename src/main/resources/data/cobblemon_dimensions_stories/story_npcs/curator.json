@@ -1,6 +1,6 @@
 {
   "npc_class": "cobblemon_dimensions_stories:hand_shopkeeper",
-  "name": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+  "name": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
   "quests": [
     "cobblemon_dimensions_stories:gather_apricorns",
     "cobblemon_dimensions_stories:the_curators_favor",

@@ -2,7 +2,7 @@
   "hitbox": "player",
   "resourceIdentifier": "cobblemon:standard",
   "names": [
-    "npc.cobblemon_dimensions_stories.shopkeeper"
+    "Mara"
   ],
   "interaction": {
     "type": "dialogue",

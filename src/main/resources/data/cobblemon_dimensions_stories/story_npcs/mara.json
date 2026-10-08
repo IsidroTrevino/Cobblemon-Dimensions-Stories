@@ -1,6 +1,6 @@
 {
   "npc_class": "cobblemon_dimensions_stories:shopkeeper",
-  "name": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+  "name": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
   "quests": [
     "cobblemon_dimensions_stories:first_steps",
     "cobblemon_dimensions_stories:the_night_watch",

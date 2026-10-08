@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Stop. Turn around. You cannot see the stall from here, can you." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "why",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "My grandmother walked this far every morning. I have been telling people the posts were the reason I stayed." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "truth",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "I was frightened. That is all it ever was. Thank you for making it boring." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "kind",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "No. But I would like to have said it out loud once, in a field, with a witness." }
       ],
@@ -37,7 +37,7 @@
     },
     {
       "id": "close",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Right. Back before the lanterns go. I have a stall to open in the morning." }
       ]

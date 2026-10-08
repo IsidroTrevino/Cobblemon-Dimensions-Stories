@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.title", "fallback": "The Night Watch" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.the_night_watch.description", "fallback": "Something walks out of the treeline after dark, and Mara refuses to move her stall. Clear the husks, break the archers on the ridge, and come back where she can see you." }
   ],
   "stages": [
     {

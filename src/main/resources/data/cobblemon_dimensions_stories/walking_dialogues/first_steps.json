@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "greeting",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "You keep circling the edge of town like you're waiting for permission. You don't need it." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "question",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "So tell me honestly. Are you here to travel, or are you here to hide?" }
       ],
@@ -22,7 +22,7 @@
     },
     {
       "id": "travel",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Good. Keep walking while I talk, I'm not going to hold you still for a speech." }
       ],
@@ -30,7 +30,7 @@
     },
     {
       "id": "undecided",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "That's an answer too. Most people who say that end up going the furthest." }
       ],
@@ -38,7 +38,7 @@
     },
     {
       "id": "both",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Honest. I like that better than brave." }
       ],
@@ -46,7 +46,7 @@
     },
     {
       "id": "farewell",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "Take these. When you're ready for real work, the Curator keeps a closet full of it." }
       ]

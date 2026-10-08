@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.title", "fallback": "A Handful of Apricorns" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.gather_apricorns.description", "fallback": "The Curator needs raw material for his next batch of Poke Balls. Bring him eight apples from the orchard and he will make it worth your while." }
   ],
   "objective": {
     "type": "item",

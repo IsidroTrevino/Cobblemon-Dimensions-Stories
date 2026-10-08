@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.title", "fallback": "The Long Way Home" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.the_long_way_home.description", "fallback": "Mara has not walked past the second lantern post in four years. She wants to try today, with someone in front of her. Lead the way and do not lose her." }
   ],
   "stages": [
     {

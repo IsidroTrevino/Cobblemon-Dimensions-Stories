@@ -1,7 +1,7 @@
 {
-  "title": { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.title" },
+  "title": { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.title", "fallback": "The Curator's Favor" },
   "description": [
-    { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.description" }
+    { "translate": "quest.cobblemon_dimensions_stories.the_curators_favor.description", "fallback": "With the orchard run behind you, the Curator finally opens the back room of his closet. Whatever he keeps in there, he wants you to see it." }
   ],
   "objective": { "type": "dialogue" },
   "rewards": [

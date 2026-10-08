@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "nag",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
         { "text": "The ridge is still rattling. Three archers, and mind the drop on the far side." }
       ]

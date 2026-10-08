@@ -2,7 +2,7 @@
   "pages": [
     {
       "id": "open",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Three bones. Clean ones. I will not explain the difference and you will not ask." }
       ],
@@ -10,7 +10,7 @@
     },
     {
       "id": "ask",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "There is something behind the closet wall that has been quiet for a long time. I would like it to stay quiet." }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "id": "wall",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "The closet is older than the shop. The shop was built to hold the closet shut." }
       ],
@@ -29,7 +29,7 @@
     },
     {
       "id": "send",
-      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper" },
+      "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
         { "text": "Bring them here. Do not put them in a chest. Do not put them in your pocket next to food." }
       ]

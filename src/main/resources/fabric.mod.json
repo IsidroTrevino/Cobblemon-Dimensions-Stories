@@ -7,22 +7,17 @@
   "authors": [
     "Cobblemon Dimensions Stories Team"
   ],
-  "environment": "*",
+  "environment": "server",
   "entrypoints": {
     "main": [
       "com.cobblemondimensions.stories.CobblemonDimensionsStories"
-    ],
-    "client": [
-      "com.cobblemondimensions.stories.client.CobblemonDimensionsStoriesClient"
     ]
   },
-  "mixins": [
-    "cobblemon_dimensions_stories.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=0.17.2",
     "fabric-api": "*",
     "minecraft": "1.21.1",
-    "cobblemon": ">=1.8.0 <1.9.0"
+    "cobblemon": ">=1.8.0 <1.9.0",
+    "java": ">=21"
   }
 }

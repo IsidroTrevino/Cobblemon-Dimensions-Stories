@@ -1,8 +1,13 @@
 package com.cobblemondimensions.stories.quest;
 
 import com.cobblemondimensions.stories.dialogue.WalkingDialogueDefinitions;
+import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
 import com.cobblemondimensions.stories.minigame.Minigame;
 import com.cobblemondimensions.stories.minigame.MinigameService;
+import com.cobblemondimensions.stories.minigame.PokedexSource;
+import com.cobblemondimensions.stories.ui.QuestJournal;
+import com.cobblemondimensions.stories.ui.StoriesText;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,8 +26,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * The {@code /stories} operator command. This is how datapack functions drive
- * quest state without needing to reach into the mod or into Cobblemon.
+ * Player interfaces and operator controls. Administrative branches keep their
+ * permission check even though reading the journal and submitting input is public.
  */
 public final class QuestCommand {
     private static final SuggestionProvider<CommandSourceStack> QUEST_IDS = (context, builder) ->
@@ -42,20 +47,48 @@ public final class QuestCommand {
     // every branch runs on the sender when no targets are given
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("stories")
-            .requires(source -> source.hasPermission(2))
+            .executes(QuestCommand::journal)
+            .then(Commands.literal("journal").executes(QuestCommand::journal))
+            .then(Commands.literal("choose")
+                .then(Commands.argument("token", StringArgumentType.word())
+                    .then(Commands.argument("choice", IntegerArgumentType.integer(-2))
+                        .executes(context -> {
+                            ServerDialogueService.choose(self(context),
+                                StringArgumentType.getString(context, "token"),
+                                IntegerArgumentType.getInteger(context, "choice"));
+                            return 1;
+                        }))))
+            .then(Commands.literal("cancel").executes(context -> {
+                ServerDialogueService.cancel(self(context));
+                return 1;
+            }))
+            .then(Commands.literal("guess")
+                .then(Commands.argument("pokemon", StringArgumentType.greedyString())
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                        PokedexSource.suggest(builder.getRemaining(),
+                            MinigameService.generationOf(self(context)), 25)
+                            .stream().map(PokedexSource.Entry::name), builder))
+                    .executes(context -> {
+                        MinigameService.guess(self(context),
+                            StringArgumentType.getString(context, "pokemon"));
+                        return 1;
+                    })))
             .then(Commands.literal("complete")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("quest", ResourceLocationArgument.id())
                     .suggests(QUEST_IDS)
                     .executes(context -> complete(context, List.of(self(context))))
                     .then(Commands.argument("targets", EntityArgument.players())
                         .executes(context -> complete(context, targets(context))))))
             .then(Commands.literal("start")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("dialogue", ResourceLocationArgument.id())
                     .suggests(DIALOGUE_IDS)
                     .executes(context -> start(context, List.of(self(context))))
                     .then(Commands.argument("targets", EntityArgument.players())
                         .executes(context -> start(context, targets(context))))))
             .then(Commands.literal("reset")
+                .requires(source -> source.hasPermission(2))
                 .executes(context -> reset(context, List.of(self(context)), null))
                 .then(Commands.argument("targets", EntityArgument.players())
                     .executes(context -> reset(context, targets(context), null))
@@ -67,13 +100,21 @@ public final class QuestCommand {
                             ResourceLocationArgument.getId(context, "quest")
                         )))))
             .then(Commands.literal("minigame")
+                .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("game", StringArgumentType.word())
                     .suggests(GAME_IDS)
                     .executes(context -> minigame(context, List.of(self(context))))
                     .then(Commands.argument("targets", EntityArgument.players())
                         .executes(context -> minigame(context, targets(context))))))
             .then(Commands.literal("list")
+                .requires(source -> source.hasPermission(2))
                 .executes(QuestCommand::list)));
+    }
+
+    private static int journal(CommandContext<CommandSourceStack> context)
+        throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        QuestJournal.open(self(context));
+        return 1;
     }
 
     private static int minigame(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> players) {
@@ -85,7 +126,7 @@ public final class QuestCommand {
             }
         }
         context.getSource().sendFailure(
-            Component.translatable("command.cobblemon_dimensions_stories.unknown_minigame", name));
+            StoriesText.translatable("command.cobblemon_dimensions_stories.unknown_minigame", name));
         return 0;
     }
 
@@ -94,7 +135,7 @@ public final class QuestCommand {
         ResourceLocation quest = ResourceLocationArgument.getId(context, "quest");
         if (QuestDefinitions.get().byId(quest).isEmpty()) {
             context.getSource().sendFailure(
-                Component.translatable("command.cobblemon_dimensions_stories.unknown_quest", quest.toString()));
+                StoriesText.translatable("command.cobblemon_dimensions_stories.unknown_quest", quest.toString()));
             return 0;
         }
 
@@ -106,7 +147,7 @@ public final class QuestCommand {
         }
         int total = changed;
         context.getSource().sendSuccess(
-            () -> Component.translatable("command.cobblemon_dimensions_stories.completed", quest.toString(), total), true);
+            () -> StoriesText.translatable("command.cobblemon_dimensions_stories.completed", quest.toString(), total), true);
         return changed;
     }
 
@@ -115,7 +156,7 @@ public final class QuestCommand {
         ResourceLocation dialogue = ResourceLocationArgument.getId(context, "dialogue");
         if (WalkingDialogueDefinitions.get().byId(dialogue).isEmpty()) {
             context.getSource().sendFailure(
-                Component.translatable("command.cobblemon_dimensions_stories.unknown_dialogue", dialogue.toString()));
+                StoriesText.translatable("command.cobblemon_dimensions_stories.unknown_dialogue", dialogue.toString()));
             return 0;
         }
 
@@ -123,7 +164,7 @@ public final class QuestCommand {
         players.forEach(player -> QuestService.startDialogue(
             player, dialogue, Optional.empty(), QuestService.NO_SPEAKER));
         context.getSource().sendSuccess(
-            () -> Component.translatable("command.cobblemon_dimensions_stories.started", dialogue.toString()), true);
+            () -> StoriesText.translatable("command.cobblemon_dimensions_stories.started", dialogue.toString()), true);
         return players.size();
     }
 
@@ -134,20 +175,21 @@ public final class QuestCommand {
     ) {
         QuestSaveData data = QuestSaveData.get(context.getSource().getServer());
         for (ServerPlayer player : players) {
+            ServerDialogueService.cancel(player);
             data.reset(player.getUUID(), quest);
             QuestService.sync(player);
         }
         context.getSource().sendSuccess(
-            () -> Component.translatable("command.cobblemon_dimensions_stories.reset", players.size()), true);
+            () -> StoriesText.translatable("command.cobblemon_dimensions_stories.reset", players.size()), true);
         return players.size();
     }
 
     private static int list(CommandContext<CommandSourceStack> context) {
         List<Quest> quests = QuestDefinitions.get().all();
         context.getSource().sendSuccess(
-            () -> Component.translatable("command.cobblemon_dimensions_stories.list", quests.size()), false);
+            () -> StoriesText.translatable("command.cobblemon_dimensions_stories.list", quests.size()), false);
         quests.forEach(quest -> context.getSource().sendSuccess(
-            () -> Component.literal(" - " + quest.id()).append(" ").append(quest.title()), false));
+            () -> Component.literal(" - " + quest.id()).append(" ").append(StoriesText.resolve(quest.title())), false));
         return quests.size();
     }
 
