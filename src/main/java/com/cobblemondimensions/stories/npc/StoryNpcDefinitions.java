@@ -25,6 +25,8 @@ public final class StoryNpcDefinitions extends SimpleJsonResourceReloadListener
 
     // keyed by npc class: two definitions on the same class would collide
     private Map<ResourceLocation, StoryNpc> byNpcClass = Map.of();
+    private Map<ResourceLocation, StoryNpc> byId = Map.of();
+    private Map<ResourceLocation, StoryNpc> giverOf = Map.of();
 
     private StoryNpcDefinitions() {
         super(new Gson(), "story_npcs");
@@ -40,12 +42,12 @@ public final class StoryNpcDefinitions extends SimpleJsonResourceReloadListener
     }
 
     public Optional<StoryNpc> byId(ResourceLocation id) {
-        return byNpcClass.values().stream().filter(npc -> npc.id().equals(id)).findFirst();
+        return Optional.ofNullable(byId.get(id));
     }
 
     /** First NPC whose quest list contains {@code questId}. */
     public Optional<StoryNpc> questGiver(ResourceLocation questId) {
-        return byNpcClass.values().stream().filter(npc -> npc.quests().contains(questId)).findFirst();
+        return Optional.ofNullable(giverOf.get(questId));
     }
 
     @Override
@@ -65,7 +67,25 @@ public final class StoryNpcDefinitions extends SimpleJsonResourceReloadListener
             .resultOrPartial(error -> LOGGER.error("Skipping story NPC {}: {}", id, error))
             .ifPresent(npc -> loaded.put(npc.npcClass(), npc.withId(id))));
 
-        byNpcClass = Map.copyOf(loaded);
+        install(loaded);
         LOGGER.info("Loaded {} Cobblemon Dimensions Stories NPCs", byNpcClass.size());
+    }
+
+    /**
+     * Builds the lookups used on every scan. If a quest is listed by two NPCs the one
+     * with the earlier id gives it, so the answer no longer depends on map order.
+     */
+    void install(Map<ResourceLocation, StoryNpc> loaded) {
+        Map<ResourceLocation, StoryNpc> ids = new HashMap<>();
+        Map<ResourceLocation, StoryNpc> givers = new HashMap<>();
+        loaded.values().stream()
+            .sorted(java.util.Comparator.comparing(npc -> npc.id().toString()))
+            .forEach(npc -> {
+                ids.put(npc.id(), npc);
+                npc.quests().forEach(quest -> givers.putIfAbsent(quest, npc));
+            });
+        byNpcClass = Map.copyOf(loaded);
+        byId = Map.copyOf(ids);
+        giverOf = Map.copyOf(givers);
     }
 }

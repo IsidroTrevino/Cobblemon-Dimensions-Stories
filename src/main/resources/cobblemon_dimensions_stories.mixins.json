@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.cobblemondimensions.stories.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PlayerInputMixin",
+    "SwingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

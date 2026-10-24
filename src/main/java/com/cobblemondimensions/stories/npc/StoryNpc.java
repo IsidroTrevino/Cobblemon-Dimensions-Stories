@@ -27,7 +27,8 @@ public record StoryNpc(
     double routeSpeed,
     int routePause,
     Optional<ResourceLocation> followDuring,
-    double followSpeed
+    double followSpeed,
+    Optional<ResourceLocation> shop
 ) {
     private static final ResourceLocation PLACEHOLDER_ID =
         ResourceLocation.fromNamespaceAndPath("cobblemon_dimensions_stories", "unnamed");
@@ -42,8 +43,9 @@ public record StoryNpc(
         Codec.DOUBLE.optionalFieldOf("route_speed", 0.45D).forGetter(StoryNpc::routeSpeed),
         Codec.INT.optionalFieldOf("route_pause", 60).forGetter(StoryNpc::routePause),
         ResourceLocation.CODEC.optionalFieldOf("follow_during").forGetter(StoryNpc::followDuring),
-        Codec.DOUBLE.optionalFieldOf("follow_speed", 0.6D).forGetter(StoryNpc::followSpeed)
-    ).apply(instance, (npcClass, name, quests, idle, route, routeSpeed, routePause, follow, followSpeed) ->
+        Codec.DOUBLE.optionalFieldOf("follow_speed", 0.6D).forGetter(StoryNpc::followSpeed),
+        ResourceLocation.CODEC.optionalFieldOf("shop").forGetter(StoryNpc::shop)
+    ).apply(instance, (npcClass, name, quests, idle, route, routeSpeed, routePause, follow, followSpeed, shop) ->
         new StoryNpc(
             PLACEHOLDER_ID,
             npcClass,
@@ -54,7 +56,8 @@ public record StoryNpc(
             routeSpeed,
             routePause,
             follow,
-            followSpeed
+            followSpeed,
+            shop
         )));
 
     public StoryNpc withId(ResourceLocation storyId) {
@@ -68,7 +71,8 @@ public record StoryNpc(
             routeSpeed,
             routePause,
             followDuring,
-            followSpeed
+            followSpeed,
+            shop
         );
     }
 

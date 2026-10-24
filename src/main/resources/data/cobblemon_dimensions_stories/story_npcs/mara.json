@@ -6,6 +6,7 @@
     "cobblemon_dimensions_stories:the_night_watch",
     "cobblemon_dimensions_stories:the_long_way_home"
   ],
+  "shop": "cobblemon_dimensions_stories:mara",
   "idle_dialogue": "cobblemon_dimensions_stories:arcade_mara",
   "route": [
     [0, 0, 0],

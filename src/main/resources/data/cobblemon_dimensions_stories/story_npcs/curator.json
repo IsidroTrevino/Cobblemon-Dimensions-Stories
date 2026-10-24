@@ -6,5 +6,6 @@
     "cobblemon_dimensions_stories:the_curators_favor",
     "cobblemon_dimensions_stories:relics_of_the_closet"
   ],
+  "shop": "cobblemon_dimensions_stories:curator",
   "idle_dialogue": "cobblemon_dimensions_stories:arcade_curator"
 }

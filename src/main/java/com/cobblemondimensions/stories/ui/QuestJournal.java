@@ -1,15 +1,14 @@
 package com.cobblemondimensions.stories.ui;
 
+import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
 import com.cobblemondimensions.stories.npc.StoryNpcDefinitions;
 import com.cobblemondimensions.stories.quest.Quest;
 import com.cobblemondimensions.stories.quest.QuestDefinitions;
 import com.cobblemondimensions.stories.quest.QuestObjective;
 import com.cobblemondimensions.stories.quest.QuestProgress;
-import com.cobblemondimensions.stories.quest.QuestReward;
-import com.cobblemondimensions.stories.quest.QuestSaveData;
 import com.cobblemondimensions.stories.quest.QuestService;
 import com.cobblemondimensions.stories.quest.QuestStatus;
-import java.util.ArrayList;
+import com.cobblemondimensions.stories.ui.art.QuestArt;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,27 +23,35 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Item;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
-/** Server-controlled quest journal. */
+/**
+ * The quest journal: the quest list on the left, the selected quest on the
+ * right. Clicking a quest shows it, the arrows turn the page, and Esc closes the
+ * journal like any other menu. Locked quests stay hidden until they unlock.
+ */
 public final class QuestJournal {
     private static final Map<UUID, Unread> READ_STATE = new HashMap<>();
     private static final Map<UUID, View> VIEWS = new HashMap<>();
+    /** Redraw every other tick: enough for the typewriter and the slow pulses. */
+    private static final int REDRAW_TICKS = 2;
 
     private QuestJournal() {
     }
 
     public static void open(ServerPlayer player) {
+        // the conversation box above the hotbar would only sit behind the journal
+        ServerDialogueService.cancel(player);
         View view = new View(player);
         refresh(player);
-        StoriesMenu.open(player, StoriesText.translatable("screen.cobblemon_dimensions_stories.quests"), menu -> {
+        StoriesMenu.open(player, view.compose(System.nanoTime()), QuestArt.MENU_ROWS, menu -> {
             view.menu = menu;
             VIEWS.put(player.getUUID(), view);
-            view.render();
+            view.buttons();
             menu.onTick(() -> {
-                if (player.server.getTickCount() % 20 == 0 && VIEWS.get(player.getUUID()) == view) {
+                if (player.server.getTickCount() % REDRAW_TICKS == 0 && VIEWS.get(player.getUUID()) == view) {
                     view.render();
                 }
             });
@@ -55,13 +62,16 @@ public final class QuestJournal {
     public static void refresh(ServerPlayer player) {
         List<Quest> quests = QuestDefinitions.get().all();
         Unread unread = unread(player);
+        Map<ResourceLocation, QuestStatus> statuses = QuestService.statuses(player);
         List<String> available = quests.stream()
-            .filter(quest -> QuestService.status(player, quest) == QuestStatus.AVAILABLE)
+            .filter(quest -> statuses.get(quest.id()) == QuestStatus.AVAILABLE)
             .map(quest -> quest.id().toString()).toList();
         List<String> newlyUnread = unread.update(quests.stream()
             .map(quest -> quest.id().toString()).collect(Collectors.toSet()), available);
         View view = VIEWS.get(player.getUUID());
         if (view != null && player.containerMenu == view.menu) {
+            // a reload can rename quests, so the cached titles go
+            view.titles.clear();
             view.render();
         }
         long remaining = newlyUnread.stream().filter(unread::isUnread).count();
@@ -74,6 +84,14 @@ public final class QuestJournal {
                 style.withColor(ChatFormatting.GREEN).withUnderlined(true)
                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/stories journal"))));
             player.sendSystemMessage(message);
+        }
+    }
+
+    /** A quest's counter moved. Availability did not change, so only an open journal needs redrawing. */
+    public static void progressed(ServerPlayer player) {
+        View view = VIEWS.get(player.getUUID());
+        if (view != null && player.containerMenu == view.menu) {
+            view.render();
         }
     }
 
@@ -98,317 +116,198 @@ public final class QuestJournal {
 
     private static final class View {
         private final ServerPlayer player;
+        private final long openedNanos = System.nanoTime();
         private StoriesMenu menu;
-        private int listPage;
-        private int detailPage;
+        /** Resolved quest titles; they only change when the datapack reloads. */
+        private final Map<ResourceLocation, String> titles = new HashMap<>();
+        /** The quests and page the click handlers were last laid out for. */
+        private List<ResourceLocation> laidOut = List.of();
+        private int laidOutPage = -1;
+        private int page;
         private ResourceLocation selected;
+        private long selectedNanos = openedNanos;
 
         private View(ServerPlayer player) {
             this.player = player;
         }
 
-        private void render() {
-            menu.clear();
-            if (selected != null) {
-                QuestDefinitions.get().byId(selected).ifPresentOrElse(this::details, () -> {
-                    selected = null;
-                    list();
-                });
-            } else {
-                list();
-            }
-            button(53, Items.BARRIER, "Close journal", () -> player.closeContainer());
+        /** Everything except locked quests, which stay hidden until they unlock. */
+        private List<Quest> visible(Map<ResourceLocation, QuestStatus> statuses) {
+            return QuestDefinitions.get().all().stream()
+                .filter(quest -> statuses.get(quest.id()) != QuestStatus.LOCKED)
+                .toList();
         }
 
-        private void list() {
-            List<Quest> quests = QuestDefinitions.get().all();
-            PageWindow window = new PageWindow(quests.size(), listPage);
-            listPage = window.page();
-            List<String> visited = new ArrayList<>();
-            for (int index = window.first(); index < window.last(); index++) {
-                Quest quest = quests.get(index);
-                QuestStatus status = QuestService.status(player, quest);
-                List<Component> lore = new ArrayList<>();
-                lore.add(statusLine(status));
-                if (unread(player).isUnread(quest.id().toString())) {
-                    lore.add(Component.literal("Unread quest").withStyle(ChatFormatting.YELLOW));
-                }
-                giver(quest).ifPresent(name -> lore.add(Component.literal("Giver: ").append(name)));
-                if (status == QuestStatus.ACTIVE) {
-                    QuestProgress progress = QuestService.progressOf(player, quest);
-                    int stage = clampStage(quest, progress.stage());
-                    lore.add(Component.literal("Stage " + (stage + 1) + "/" + quest.stageCount()));
-                    lore.addAll(objectiveLore(player, quest.stage(stage), progress.count(), true));
-                }
-                lore.add(Component.literal("Click to read details").withStyle(ChatFormatting.GRAY));
-                int slot = index - window.first();
-                menu.set(slot, icon(statusItem(status), quest.title(), lore), (button, click) -> {
-                    selected = quest.id();
-                    detailPage = 0;
-                    render();
-                });
-                // Locked quests remain unread when they eventually unlock.
-                if (status != QuestStatus.LOCKED) {
-                    visited.add(quest.id().toString());
+        private String title(Quest quest) {
+            return titles.computeIfAbsent(quest.id(), id -> plain(quest.title()));
+        }
+
+        /** Where the selection is in the list, falling back to the top after a reload. */
+        private int index(List<Quest> quests) {
+            for (int index = 0; index < quests.size(); index++) {
+                if (quests.get(index).id().equals(selected)) {
+                    return index;
                 }
             }
-            unread(player).markSeen(visited);
             if (quests.isEmpty()) {
-                menu.set(22, StoriesMenu.icon(Items.BOOK, Component.literal("No quests are loaded")), null);
+                return -1;
             }
-            navigation(window, false);
+            selected = quests.getFirst().id();
+            selectedNanos = System.nanoTime();
+            return 0;
         }
 
-        private void details(Quest quest) {
-            QuestStatus status = QuestService.status(player, quest);
-            QuestProgress progress = QuestService.progressOf(player, quest);
-            int currentStage = clampStage(quest, progress.stage());
-            List<Card> cards = new ArrayList<>();
-            cards.add(new Card(statusItem(status), quest.title(), List.of(statusLine(status),
-                Component.literal("Stages: " + quest.stageCount()))));
-            Component giver = giver(quest).orElse(Component.literal("Find the quest giver"));
-            String guidance = switch (status) {
-                case AVAILABLE -> "Talk to the giver to start this quest.";
-                case ACTIVE -> QuestService.canAdvance(player, quest)
-                    ? "Return to the giver to finish this stage."
-                    : "Continue the current stage, then return to the giver.";
-                case LOCKED -> "Complete the prerequisites to unlock this quest.";
-                case COMPLETED -> "This quest is complete and its rewards have been granted.";
-            };
-            cards.add(new Card(Items.COMPASS, Component.literal("Quest giver"), List.of(giver,
-                Component.literal(guidance).withStyle(ChatFormatting.GRAY))));
-            if (quest.requires().isEmpty()) {
-                cards.add(new Card(Items.IRON_DOOR, Component.literal("Prerequisites"),
-                    List.of(Component.literal("No prerequisites"))));
-            }
-            for (ResourceLocation required : quest.requires()) {
-                boolean completed = QuestSaveData.get(player.server).isCompleted(player.getUUID(), required);
-                Component title = QuestDefinitions.get().byId(required).map(Quest::title)
-                    .orElse(Component.literal(required.toString()));
-                cards.add(new Card(completed ? Items.EMERALD : Items.IRON_DOOR,
-                    Component.literal("Prerequisite"), List.of(title,
-                        Component.literal(completed ? "Completed" : "Not completed")
-                            .withStyle(completed ? ChatFormatting.GREEN : ChatFormatting.RED))));
-            }
-            if (quest.description().isEmpty()) {
-                cards.add(new Card(Items.PAPER, Component.literal("Description"),
-                    List.of(Component.literal("No description"))));
-            }
-            for (int index = 0; index < quest.description().size(); index++) {
-                textCards(cards, "Description " + (index + 1), quest.description().get(index));
-            }
-            for (int index = 0; index < quest.stageCount(); index++) {
-                QuestObjective objective = quest.stage(index);
-                boolean current = status == QuestStatus.ACTIVE && index == currentStage;
-                boolean completed = status == QuestStatus.COMPLETED
-                    || status == QuestStatus.ACTIVE && index < currentStage;
-                List<Component> lore = new ArrayList<>();
-                lore.add(Component.literal(completed ? "Completed" : current ? "Current stage" : "Upcoming stage")
-                    .withStyle(completed ? ChatFormatting.GREEN : current ? ChatFormatting.GOLD : ChatFormatting.GRAY));
-                objective.hint().ifPresent(hint -> lore.addAll(wrap(hint)));
-                lore.addAll(objectiveLore(player, objective, progress.count(), current));
-                cards.add(new Card(objectiveItem(objective),
-                    Component.literal("Stage " + (index + 1) + "/" + quest.stageCount()), lore));
-            }
-            if (quest.rewards().isEmpty()) {
-                cards.add(new Card(Items.CHEST, Component.literal("Rewards"),
-                    List.of(Component.literal("No rewards"))));
-            }
-            for (int index = 0; index < quest.rewards().size(); index++) {
-                QuestReward reward = quest.rewards().get(index);
-                List<Component> lore = rewardLore(reward.displayName(), status == QuestStatus.COMPLETED);
-                cards.add(new Card(Items.CHEST, Component.literal("Reward " + (index + 1)), lore));
-            }
-            PageWindow window = new PageWindow(cards.size(), detailPage);
-            detailPage = window.page();
-            for (int index = window.first(); index < window.last(); index++) {
-                Card card = cards.get(index);
-                menu.set(index - window.first(), icon(card.item(), card.title(), card.lore()), null);
-            }
-            if (status != QuestStatus.LOCKED) {
-                unread(player).markSeen(List.of(quest.id().toString()));
-            }
-            button(45, Items.BOOK, "All quests", () -> {
-                selected = null;
-                render();
-            });
-            navigation(window, true);
-        }
-
-        private void navigation(PageWindow window, boolean details) {
-            if (window.page() > 0) {
-                button(47, Items.ARROW, "Previous page", () -> {
-                    if (details) {
-                        detailPage = window.previous().page();
-                    } else {
-                        listPage = window.previous().page();
-                    }
-                    render();
-                });
-            }
-            menu.set(49, StoriesMenu.icon(Items.PAPER,
-                Component.literal("Page " + (window.page() + 1) + "/" + window.pages())), null);
-            if (window.page() + 1 < window.pages()) {
-                button(51, Items.ARROW, "Next page", () -> {
-                    if (details) {
-                        detailPage = window.next().page();
-                    } else {
-                        listPage = window.next().page();
-                    }
-                    render();
-                });
-            }
-        }
-
-        private void button(int slot, Item item, String title, Runnable action) {
-            menu.set(slot, StoriesMenu.icon(item, Component.literal(title)), (button, click) -> action.run());
-        }
-    }
-
-    private record Card(Item item, Component title, List<Component> lore) {
-    }
-
-    private static java.util.Optional<Component> giver(Quest quest) {
-        return StoryNpcDefinitions.get().questGiver(quest.id()).map(npc -> StoriesText.resolve(npc.name()));
-    }
-
-    private static int clampStage(Quest quest, int stage) {
-        return Math.max(0, Math.min(stage, quest.stageCount() - 1));
-    }
-
-    private static Item statusItem(QuestStatus status) {
-        return switch (status) {
-            case LOCKED -> Items.BARRIER;
-            case AVAILABLE -> Items.WRITABLE_BOOK;
-            case ACTIVE -> Items.BOOK;
-            case COMPLETED -> Items.EMERALD;
-        };
-    }
-
-    private static Component statusLine(QuestStatus status) {
-        return switch (status) {
-            case LOCKED -> Component.literal("Locked").withStyle(ChatFormatting.DARK_GRAY);
-            case AVAILABLE -> Component.literal("Available").withStyle(ChatFormatting.YELLOW);
-            case ACTIVE -> Component.literal("Active").withStyle(ChatFormatting.GOLD);
-            case COMPLETED -> Component.literal("Completed").withStyle(ChatFormatting.GREEN);
-        };
-    }
-
-    private static Item objectiveItem(QuestObjective objective) {
-        return switch (objective.kind()) {
-            case DIALOGUE -> Items.WRITABLE_BOOK;
-            case ITEM -> Items.CHEST;
-            case KILL -> Items.IRON_SWORD;
-            case ESCORT -> Items.LEAD;
-            case COMMAND -> Items.REDSTONE_TORCH;
-        };
-    }
-
-    private static List<Component> objectiveLore(ServerPlayer player, QuestObjective objective,
-                                                 int count, boolean current) {
-        List<Component> lore = new ArrayList<>();
-        switch (objective.kind()) {
-            case DIALOGUE -> lore.add(Component.literal("Finish the conversation with the giver."));
-            case ITEM -> {
-                Component item = objective.resolveItem().map(entry -> entry.getDescription().copy())
-                    .orElseGet(() -> Component.literal(objective.item().map(ResourceLocation::toString)
-                        .orElse("required items")));
-                lore.add(Component.literal("Collect " + objective.required() + "x ").append(item));
-                if (current) {
-                    int held = objective.resolveItem().map(entry -> inventoryCount(player, entry)).orElse(0);
-                    lore.add(Component.literal("Held: " + held + "/" + objective.required()));
-                }
-                lore.add(Component.literal(objective.consume()
-                    ? "Hand the items to the giver." : "Keep the items and return to the giver."));
-            }
-            case KILL -> {
-                Component entity = objective.resolveEntity().map(entry -> entry.getDescription().copy())
-                    .orElseGet(() -> Component.literal(objective.entity().map(ResourceLocation::toString)
-                        .orElse("required enemies")));
-                lore.add(Component.literal("Defeat " + objective.required() + "x ").append(entity));
-                if (current) {
-                    lore.add(Component.literal("Defeated: " + count + "/" + objective.required()));
-                }
-            }
-            case ESCORT -> {
-                lore.add(Component.literal("Lead the giver " + objective.required() + " blocks from their post."));
-                if (current) {
-                    lore.add(Component.literal("Distance: " + count + "/" + objective.required() + " blocks"));
-                }
-            }
-            case COMMAND -> lore.add(Component.literal("Complete the server-defined objective."));
-        }
-        return lore;
-    }
-
-    private static int inventoryCount(ServerPlayer player, Item item) {
-        int held = 0;
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            ItemStack stack = player.getInventory().getItem(slot);
-            if (stack.is(item)) {
-                held += stack.getCount();
-            }
-        }
-        return held;
-    }
-
-    private static ItemStack icon(Item item, Component title, List<Component> lore) {
-        return StoriesMenu.icon(item, title, lore.toArray(Component[]::new));
-    }
-
-    static List<Component> rewardLore(Component name, boolean granted) {
-        // Cobblemon's item translations belong to the player's existing client.
-        // Flattening them on the dedicated server would turn their keys into text.
-        List<Component> lore = new ArrayList<>(List.of(StoriesText.resolve(name)));
-        lore.add(Component.literal(granted
-            ? "Granted on completion" : "Granted when the quest is complete").withStyle(ChatFormatting.GRAY));
-        return lore;
-    }
-
-    private static void textCards(List<Card> cards, String title, Component text) {
-        List<Component> lines = wrap(text);
-        int parts = Math.max(1, (lines.size() + 5) / 6);
-        for (int part = 0; part < parts; part++) {
-            cards.add(new Card(Items.PAPER, Component.literal(title + (parts > 1
-                ? " (" + (part + 1) + "/" + parts + ")" : "")),
-                lines.subList(part * 6, Math.min(lines.size(), (part + 1) * 6))));
-        }
-    }
-
-    private static List<Component> wrap(Component component) {
-        List<Component> lines = new ArrayList<>();
-        for (String paragraph : StoriesText.resolve(component).getString().split("\\n", -1)) {
-            String remaining = paragraph;
-            while (remaining.length() > 44) {
-                int end = remaining.lastIndexOf(' ', 44);
-                if (end <= 0) {
-                    end = 44;
-                    if (Character.isHighSurrogate(remaining.charAt(end - 1))) {
-                        end--;
-                    }
-                }
-                lines.add(Component.literal(remaining.substring(0, end)).withStyle(ChatFormatting.GRAY));
-                remaining = remaining.substring(end).stripLeading();
-            }
-            lines.add(Component.literal(remaining).withStyle(ChatFormatting.GRAY));
-        }
-        return lines;
-    }
-
-    static record PageWindow(int total, int page) {
-        private static final int CAPACITY = 45;
-
-        PageWindow {
-            total = Math.max(0, total);
-            int pages = total == 0 ? 1 : (total - 1) / CAPACITY + 1;
+        private void render() {
+            Map<ResourceLocation, QuestStatus> statuses = QuestService.statuses(player);
+            List<Quest> quests = visible(statuses);
+            int pages = Math.max(1, (quests.size() + QuestArt.ROWS_PER_PAGE - 1) / QuestArt.ROWS_PER_PAGE);
             page = Math.max(0, Math.min(page, pages - 1));
+            menu.retitle(JournalView.compose(frame(quests, statuses), System.nanoTime()));
+            // the click handlers only depend on which quests are listed and which page is up
+            List<ResourceLocation> ids = quests.stream().map(Quest::id).toList();
+            if (page != laidOutPage || !ids.equals(laidOut)) {
+                buttons(quests, pages);
+                laidOut = ids;
+                laidOutPage = page;
+            }
         }
 
-        int pages() { return total == 0 ? 1 : (total - 1) / CAPACITY + 1; }
-        int first() { return page * CAPACITY; }
-        int last() { return Math.min(total, first() + CAPACITY); }
-        PageWindow previous() { return new PageWindow(total, page - 1); }
-        PageWindow next() { return new PageWindow(total, page + 1); }
+        /** The first layout, once the menu exists. */
+        private void buttons() {
+            Map<ResourceLocation, QuestStatus> statuses = QuestService.statuses(player);
+            List<Quest> quests = visible(statuses);
+            int pages = Math.max(1, (quests.size() + QuestArt.ROWS_PER_PAGE - 1) / QuestArt.ROWS_PER_PAGE);
+            page = Math.max(0, Math.min(page, pages - 1));
+            buttons(quests, pages);
+            laidOut = quests.stream().map(Quest::id).toList();
+            laidOutPage = page;
+        }
+
+        /** Every slot under a quest row selects it; the bottom strip holds the page arrows. */
+        private void buttons(List<Quest> quests, int pages) {
+            menu.clear();
+            int first = page * QuestArt.ROWS_PER_PAGE;
+            for (int row = 0; row < QuestArt.ROWS_PER_PAGE && first + row < quests.size(); row++) {
+                Quest quest = quests.get(first + row);
+                for (int column = 0; column < 5; column++) {
+                    menu.set(row * StoriesMenu.COLUMNS + column, ItemStack.EMPTY, (button, click) -> select(quest));
+                }
+            }
+            if (page > 0) {
+                for (int column = 0; column < 2; column++) {
+                    menu.set(menu.lowerSlot(QuestArt.BUTTON_ROW, column), ItemStack.EMPTY, (button, click) -> turn(-1));
+                }
+            }
+            if (page + 1 < pages) {
+                for (int column = 2; column < 4; column++) {
+                    menu.set(menu.lowerSlot(QuestArt.BUTTON_ROW, column), ItemStack.EMPTY, (button, click) -> turn(1));
+                }
+            }
+        }
+
+        private void select(Quest quest) {
+            if (!quest.id().equals(selected)) {
+                selected = quest.id();
+                selectedNanos = System.nanoTime();
+                click();
+                render();
+            }
+        }
+
+        private void turn(int pages) {
+            page += pages;
+            click();
+            render();
+        }
+
+        private void click() {
+            player.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.MASTER, 0.4F, 1.0F);
+        }
+
+        private Component compose(long now) {
+            Map<ResourceLocation, QuestStatus> statuses = QuestService.statuses(player);
+            return JournalView.compose(frame(visible(statuses), statuses), now);
+        }
+
+        private JournalView.Frame frame(List<Quest> quests, Map<ResourceLocation, QuestStatus> statuses) {
+            int index = index(quests);
+            List<JournalView.Row> rows = quests.stream()
+                .map(quest -> new JournalView.Row(title(quest), statuses.get(quest.id())))
+                .toList();
+            int first = page * QuestArt.ROWS_PER_PAGE;
+            if (first < quests.size()) {
+                unread(player).markSeen(quests.subList(first, Math.min(quests.size(), first + QuestArt.ROWS_PER_PAGE))
+                    .stream().map(quest -> quest.id().toString()).toList());
+            }
+            if (index < 0) {
+                return new JournalView.Frame(rows, page, -1, "", "", "", openedNanos, selectedNanos);
+            }
+            Quest quest = quests.get(index);
+            QuestStatus status = statuses.get(quest.id());
+            String description = quest.descriptionText();
+            String step = stepLine(quest, status);
+            if (!step.isEmpty()) {
+                description = description.isEmpty() ? step : description + "\n\n" + step;
+            }
+            return new JournalView.Frame(rows, page, index, description, giverHint(quest, status), rewardLine(quest),
+                openedNanos, selectedNanos);
+        }
+
+        /** The current stage of an active quest, e.g. "Step 2/3: Find the shard (1/5)". */
+        private String stepLine(Quest quest, QuestStatus status) {
+            if (status != QuestStatus.ACTIVE) {
+                return "";
+            }
+            QuestProgress progress = QuestService.progressOf(player, quest);
+            QuestObjective objective = quest.stage(progress.stage());
+            StringBuilder line = new StringBuilder();
+            if (quest.stageCount() > 1) {
+                line.append("Step ").append(Math.min(progress.stage(), quest.stageCount() - 1) + 1)
+                    .append('/').append(quest.stageCount());
+            }
+            objective.hint().map(hint -> StoriesText.resolve(hint).getString()).ifPresent(hint -> {
+                if (!line.isEmpty()) {
+                    line.append(": ");
+                }
+                line.append(hint);
+            });
+            if (objective.tracksCounter()) {
+                line.append(line.isEmpty() ? "" : " ")
+                    .append('(').append(progress.count()).append('/').append(objective.required()).append(')');
+            }
+            return line.toString();
+        }
+
+        /** One line pointing at the giver. Empty once the quest is done. */
+        private String giverHint(Quest quest, QuestStatus status) {
+            if (status == QuestStatus.COMPLETED || status == QuestStatus.LOCKED) {
+                return "";
+            }
+            String giver = StoryNpcDefinitions.get().questGiver(quest.id())
+                .map(npc -> StoriesText.resolve(npc.name()).getString()).orElse("");
+            if (giver.isEmpty()) {
+                return status == QuestStatus.AVAILABLE ? "Find the quest giver" : "";
+            }
+            if (status == QuestStatus.AVAILABLE) {
+                return "Talk to " + giver + " to start";
+            }
+            return quest.stage(QuestService.progressOf(player, quest).stage()).isTurnIn()
+                ? "Bring it back to " + giver
+                : "Return to " + giver;
+        }
+    }
+
+    private static String plain(Component component) {
+        return StoriesText.resolve(component).getString();
+    }
+
+    private static String rewardLine(Quest quest) {
+        if (quest.rewards().isEmpty()) {
+            return "No rewards";
+        }
+        return quest.rewards().stream()
+            .map(reward -> StoriesText.resolve(reward.displayName()).getString())
+            .collect(Collectors.joining(", "));
     }
 
     static final class Unread {

@@ -1,0 +1,55 @@
+{
+  "theme": "classic",
+  "speaker": {"translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara"},
+  "pages": [
+    {
+      "id": "main",
+      "lines": ["Welcome, {player}! What can I do for you?"],
+      "options": [
+        {"text": "Buy", "goto": "buy_menu"},
+        {"text": "Talk", "goto": "talk_1"},
+        {"text": "Say goodbye", "close": true}
+      ]
+    },
+    {
+      "id": "buy_menu",
+      "lines": ["What would you like to browse?"],
+      "options": [
+        {"text": "Poké Balls", "goto": "catalog_poke_balls"},
+        {"text": "Medicine", "goto": "catalog_medicine"},
+        {"text": "Back", "goto": "main"}
+      ]
+    },
+    {
+      "id": "catalog_poke_balls",
+      "lines": [
+        "Poké Ball - 200\nGreat Ball - 600\nUltra Ball - 1,200",
+        "This catalog is a demo. Wire these entries into your economy before you enable purchases."
+      ],
+      "next": "buy_menu"
+    },
+    {
+      "id": "catalog_medicine",
+      "lines": [
+        "Potion - 300\nSuper Potion - 700\nRevive - 1,500",
+        "This catalog is a demo. Wire these entries into your economy before you enable purchases."
+      ],
+      "next": "buy_menu"
+    },
+    {
+      "id": "talk_1",
+      "lines": ["Travelers tell me the old road beyond town has started to feel different. Too quiet, even for this hour."],
+      "next": "talk_2"
+    },
+    {
+      "id": "talk_2",
+      "lines": ["Yesterday I found fresh Pokémon tracks beside the shrine, but they stopped in the middle of the path."],
+      "next": "talk_3"
+    },
+    {
+      "id": "talk_3",
+      "lines": ["If your team is ready, ask around before heading out. Someone in town must know what happened."],
+      "next": "main"
+    }
+  ]
+}

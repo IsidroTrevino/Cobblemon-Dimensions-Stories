@@ -4,15 +4,15 @@
   "version": "${version}",
   "name": "Cobblemon Dimensions Stories",
   "description": "Story NPCs, quests and arcade minigames for Cobblemon servers.",
-  "authors": [
-    "Cobblemon Dimensions Stories Team"
-  ],
-  "environment": "server",
+  "environment": "${environment}",
   "entrypoints": {
     "main": [
       "com.cobblemondimensions.stories.CobblemonDimensionsStories"
     ]
   },
+  "mixins": [
+    "cobblemon_dimensions_stories.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.17.2",
     "fabric-api": "*",

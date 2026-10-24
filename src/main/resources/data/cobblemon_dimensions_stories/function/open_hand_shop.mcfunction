@@ -1,2 +1,2 @@
-# Opens the Hand Assets shop directly for the executing player.
-opendialogue cobblemon_dimensions_stories:hand_shopkeeper @s
+# Opens The Curator's shop screen for the executing player.
+stories shop cobblemon_dimensions_stories:curator @s

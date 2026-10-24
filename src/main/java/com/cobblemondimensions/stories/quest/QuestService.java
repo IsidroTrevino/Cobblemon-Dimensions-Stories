@@ -267,7 +267,7 @@ public final class QuestService {
 
             int counted = progress.count() + 1;
             data.setProgress(player.getUUID(), quest.id(), new QuestProgress(progress.stage(), counted));
-            sync(player);
+            QuestJournal.progressed(player);
             player.displayClientMessage(
                 StoriesText.translatable(
                     "message.cobblemon_dimensions_stories.progress", quest.title(), counted, objective.required()
@@ -291,7 +291,7 @@ public final class QuestService {
             return;
         }
         data.setProgress(player.getUUID(), quest.id(), new QuestProgress(progress.stage(), reached));
-        sync(player);
+        QuestJournal.progressed(player);
         if (reached >= objective.required()) {
             player.displayClientMessage(
                 StoriesText.translatable("message.cobblemon_dimensions_stories.escort_done", quest.title())

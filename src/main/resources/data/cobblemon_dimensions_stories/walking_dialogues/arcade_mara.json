@@ -25,7 +25,7 @@
       "id": "pattern_brief",
       "speaker": { "translate": "npc.cobblemon_dimensions_stories.shopkeeper", "fallback": "Mara" },
       "lines": [
-        { "text": "A run of arrows appears. Click the direction buttons in order before the timer empties." },
+        { "text": "A run of arrows appears. Press W, A, S and D to repeat them in order before the timer empties. Sneak to leave." },
         { "text": "Every level you clear is faster than the last, and a clean streak pays better." }
       ],
       "options": [

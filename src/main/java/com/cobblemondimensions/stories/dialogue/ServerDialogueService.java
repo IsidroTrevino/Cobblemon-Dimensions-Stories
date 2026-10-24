@@ -6,6 +6,7 @@ import com.cobblemondimensions.stories.quest.Quest;
 import com.cobblemondimensions.stories.quest.QuestDefinitions;
 import com.cobblemondimensions.stories.quest.QuestService;
 import com.cobblemondimensions.stories.quest.QuestStatus;
+import com.cobblemondimensions.stories.ui.Hud;
 import com.cobblemondimensions.stories.ui.StoriesText;
 import java.util.HashMap;
 import java.util.List;
@@ -13,21 +14,28 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-/** Walking conversations through vanilla chat; all input authority stays on the server. */
+/**
+ * Walking conversations, shown in the dialogue box above the hotbar so the player
+ * can keep moving while an NPC talks.
+ *
+ * <p>Input works the way it did with the client mod: left click (or right-clicking
+ * the speaker again) finishes the line or moves on, and the scroll wheel moves the
+ * highlight when there is a choice. {@link Hud} reads both from what the client
+ * sends; all input authority stays on the server.
+ */
 public final class ServerDialogueService {
     private static final double ABANDON_DISTANCE_SQUARED = 20.0D * 20.0D;
     private static final int IDLE_TICKS = 20 * 120;
+    private static final int BLIP_STRIDE = 2;
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
 
     private ServerDialogueService() {
@@ -38,6 +46,7 @@ public final class ServerDialogueService {
         Session previous = SESSIONS.remove(player.getUUID());
         if (previous != null) {
             previous.cursor.cancel();
+            Hud.close(player, previous);
         }
         // NPC interaction cancels the previous conversation before reserving the
         // new speaker. Releasing here would also release that new reservation.
@@ -55,7 +64,13 @@ public final class ServerDialogueService {
             cancel(player);
             return;
         }
-        showPage(session);
+        Hud.show(player, session);
+        Hud.safely(player, session, () -> session.showPage(System.nanoTime()));
+    }
+
+    /** True while a conversation is on screen. */
+    public static boolean active(ServerPlayer player) {
+        return SESSIONS.containsKey(player.getUUID());
     }
 
     public static void choose(ServerPlayer player, String token, int choice) {
@@ -75,19 +90,15 @@ public final class ServerDialogueService {
             return;
         }
 
-        WalkingDialoguePage page = session.dialogue.pages().get(session.cursor.pageIndex());
+        WalkingDialoguePage page = session.page();
         DialogueCursor.Result result = session.cursor.choose(player.getUUID(), token, choice);
         switch (result) {
             case REJECTED -> expiredLink(player);
             case PAGE -> {
                 session.lastInputTick = player.server.getTickCount();
-                showPage(session);
+                Hud.safely(player, session, () -> session.showPage(System.nanoTime()));
             }
-            case CANCELLED -> {
-                detach(session);
-                player.sendSystemMessage(Component.literal("Conversation cancelled.")
-                    .withStyle(ChatFormatting.GRAY));
-            }
+            case CANCELLED -> detach(session);
             case COMPLETED, MINIGAME -> {
                 // Detach before quest completion: it can synchronously start the
                 // next stage's dialogue, which must survive this callback.
@@ -105,26 +116,9 @@ public final class ServerDialogueService {
         Session session = SESSIONS.remove(player.getUUID());
         if (session != null) {
             session.cursor.cancel();
+            Hud.close(player, session);
         }
         StoryNpcs.endConversation(player);
-    }
-
-    public static void tick(MinecraftServer server) {
-        // Cancellation mutates the map, and future completion callbacks can open
-        // another session, so iterate a snapshot rather than the live values.
-        for (Session session : List.copyOf(SESSIONS.values())) {
-            ServerPlayer player = session.player;
-            if (server.getPlayerList().getPlayer(player.getUUID()) != player) {
-                cancel(player);
-            } else if (!valid(session)) {
-                cancel(player);
-                walkedAway(player);
-            } else if (server.getTickCount() - session.lastInputTick >= IDLE_TICKS) {
-                cancel(player);
-                player.sendSystemMessage(Component.literal("Conversation expired. Talk to the speaker to restart.")
-                    .withStyle(ChatFormatting.GRAY));
-            }
-        }
     }
 
     public static void stop() {
@@ -135,6 +129,7 @@ public final class ServerDialogueService {
 
     private static void detach(Session session) {
         SESSIONS.remove(session.player.getUUID(), session);
+        Hud.close(session.player, session);
         StoryNpcs.endConversation(session.player);
     }
 
@@ -157,40 +152,8 @@ public final class ServerDialogueService {
                 .isPresent()).orElse(true);
     }
 
-    private static void showPage(Session session) {
-        ServerPlayer player = session.player;
-        WalkingDialoguePage page = session.dialogue.pages().get(session.cursor.pageIndex());
-        Component speaker = page.speaker().map(StoriesText::resolve)
-            .orElseGet(() -> Component.literal("Dialogue"));
-        player.sendSystemMessage(Component.literal("— ").withStyle(ChatFormatting.GOLD)
-            .append(speaker).append(" —"));
-        for (Component line : page.lines()) {
-            player.sendSystemMessage(StoriesText.resolve(line));
-        }
-        String token = session.cursor.token();
-        if (page.hasOptions()) {
-            for (int index = 0; index < page.options().size(); index++) {
-                MutableComponent label = Component.literal("[" + (index + 1) + "] ")
-                    .append(StoriesText.resolve(page.options().get(index).text()));
-                player.sendSystemMessage(link(label, token, index, ChatFormatting.GREEN));
-            }
-        } else {
-            Component label = Component.literal(page.minigame().isPresent() ? "[Play]" : "[Next]");
-            player.sendSystemMessage(link(label, token, -1, ChatFormatting.GREEN));
-        }
-        player.sendSystemMessage(link(Component.literal("[Cancel]"), token, -2, ChatFormatting.GRAY));
-    }
-
-    private static MutableComponent link(Component label, String token, int choice, ChatFormatting color) {
-        return label.copy().withStyle(style -> style.withColor(color).withUnderlined(true)
-            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                "/stories choose " + token + " " + choice))
-            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                Component.literal("Click to continue this conversation"))));
-    }
-
     private static void expiredLink(ServerPlayer player) {
-        player.sendSystemMessage(Component.literal("That dialogue link has expired. Use the latest choices.")
+        player.sendSystemMessage(Component.literal("That dialogue choice has expired.")
             .withStyle(ChatFormatting.GRAY));
     }
 
@@ -201,7 +164,7 @@ public final class ServerDialogueService {
     private record QuestStamp(Quest quest, QuestStatus status, int stage) {
     }
 
-    private static final class Session {
+    private static final class Session implements Hud.Screen {
         private final ServerPlayer player;
         private final WalkingDialogue dialogue;
         private final Optional<ResourceLocation> quest;
@@ -211,6 +174,14 @@ public final class ServerDialogueService {
         private final Optional<QuestStamp> questStamp;
         private final DialogueCursor cursor;
         private int lastInputTick;
+
+        private long openedNanos;
+        private long pageNanos;
+        private long choicesNanos;
+        private boolean forceReveal;
+        private int selection;
+        private int spoken;
+        private String text = "";
 
         private Session(ServerPlayer player, WalkingDialogue dialogue,
                         Optional<ResourceLocation> quest, int speaker) {
@@ -228,6 +199,144 @@ public final class ServerDialogueService {
                 new DialogueCursor.Page(page.id(), page.options().stream().map(WalkingDialogueOption::next).toList(),
                     page.next(), page.minigame().isPresent())).toList());
             this.lastInputTick = player.server.getTickCount();
+            this.openedNanos = System.nanoTime();
+        }
+
+        private WalkingDialoguePage page() {
+            return dialogue.pages().get(cursor.pageIndex());
+        }
+
+        private void showPage(long now) {
+            WalkingDialoguePage page = page();
+            text = String.join("\n\n", page.lines().stream()
+                .map(line -> StoriesText.resolve(line).getString()).toList());
+            pageNanos = Math.max(now, openedNanos + DialogueView.OPEN_NANOS + DialogueView.UNROLL_NANOS);
+            forceReveal = false;
+            selection = 0;
+            choicesNanos = 0L;
+            spoken = 0;
+            draw(now);
+        }
+
+        private int visible(long now) {
+            if (forceReveal) {
+                return text.length();
+            }
+            double seconds = Math.max(0L, now - pageNanos) / 1_000_000_000.0D;
+            return Math.min(text.length(), (int) Math.floor(seconds * DialogueView.CHARACTERS_PER_SECOND));
+        }
+
+        private boolean complete(long now) {
+            return visible(now) >= text.length();
+        }
+
+        private boolean choosing(long now) {
+            return page().hasOptions() && complete(now);
+        }
+
+        /** Skip the opening, finish the line, or move on. */
+        @Override
+        public void click() {
+            long now = System.nanoTime();
+            lastInputTick = player.server.getTickCount();
+            if (now - openedNanos < DialogueView.OPEN_NANOS + DialogueView.UNROLL_NANOS) {
+                openedNanos = now - DialogueView.OPEN_NANOS - DialogueView.UNROLL_NANOS;
+                pageNanos = Math.max(pageNanos, now);
+                return;
+            }
+            if (!complete(now)) {
+                forceReveal = true;
+                return;
+            }
+            WalkingDialoguePage page = page();
+            int choice = page.hasOptions() ? Math.floorMod(selection, page.options().size()) : -1;
+            choose(player, cursor.token(), choice);
+        }
+
+        @Override
+        public boolean scrolls() {
+            return choosing(System.nanoTime());
+        }
+
+        @Override
+        public void scroll(int steps) {
+            selection += steps;
+            player.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.MASTER, 0.25F, 1.4F);
+            lastInputTick = player.server.getTickCount();
+        }
+
+        @Override
+        public boolean belongsTo(Entity entity) {
+            return speakerUuid != null && speakerUuid.equals(entity.getUUID());
+        }
+
+        @Override
+        public void tick(long now) {
+            if (SESSIONS.get(player.getUUID()) != this) {
+                return;
+            }
+            if (!valid(this)) {
+                cancel(player);
+                walkedAway(player);
+                return;
+            }
+            if (player.server.getTickCount() - lastInputTick >= IDLE_TICKS) {
+                cancel(player);
+                player.sendSystemMessage(Component.literal("Conversation expired. Talk to the speaker to restart.")
+                    .withStyle(ChatFormatting.GRAY));
+                return;
+            }
+            speak(now);
+            if (choosing(now) && choicesNanos == 0L) {
+                choicesNanos = now;
+            }
+            draw(now);
+        }
+
+        @Override
+        public void hidden() {
+            // Another overlay took the screen; the conversation is over.
+            if (SESSIONS.remove(player.getUUID(), this)) {
+                cursor.cancel();
+                StoryNpcs.endConversation(player);
+            }
+        }
+
+        /** One soft blip for every couple of letters typed, pitched per speaker. */
+        private void speak(long now) {
+            int visible = visible(now);
+            if (visible <= spoken) {
+                spoken = visible;
+                return;
+            }
+            boolean blip = visible - spoken > BLIP_STRIDE * 2;
+            for (int index = spoken; !blip && index < visible; index++) {
+                blip = index % BLIP_STRIDE == 0 && !Character.isWhitespace(text.charAt(index));
+            }
+            spoken = visible;
+            if (blip) {
+                String name = page().speakerText();
+                float pitch = name.isBlank() ? 1.2F : 0.9F + Math.floorMod(name.hashCode(), 7) * 0.09F;
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_BIT.value(), SoundSource.MASTER, 0.35F, pitch);
+            }
+        }
+
+        // the speaker and option strings of the page last drawn; resolving them every tick is wasted work
+        private WalkingDialoguePage resolvedFor;
+        private String speakerName = "";
+        private List<String> optionTexts = List.of();
+
+        private void draw(long now) {
+            WalkingDialoguePage page = page();
+            if (page != resolvedFor) {
+                resolvedFor = page;
+                speakerName = page.speaker().map(name -> StoriesText.resolve(name).getString()).orElse("");
+                optionTexts = page.options().stream().map(option -> StoriesText.resolve(option.text()).getString()).toList();
+            }
+            DialogueView.Frame frame = new DialogueView.Frame(speakerName,
+                text, visible(now), complete(now), page.hasOptions(), optionTexts,
+                selection, openedNanos, pageNanos, choicesNanos);
+            Hud.draw(player, this, DialogueView.compose(frame, now));
         }
     }
 }

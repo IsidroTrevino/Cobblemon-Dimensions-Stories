@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public final class QuestDefinitions extends SimpleJsonResourceReloadListener
     private static final QuestDefinitions INSTANCE = new QuestDefinitions();
 
     private List<Quest> ordered = List.of();
+    private Map<ResourceLocation, Quest> byId = Map.of();
 
     private QuestDefinitions() {
         super(new Gson(), "quests");
@@ -41,7 +43,7 @@ public final class QuestDefinitions extends SimpleJsonResourceReloadListener
     }
 
     public Optional<Quest> byId(ResourceLocation id) {
-        return ordered.stream().filter(quest -> quest.id().equals(id)).findFirst();
+        return Optional.ofNullable(byId.get(id));
     }
 
     @Override
@@ -61,9 +63,18 @@ public final class QuestDefinitions extends SimpleJsonResourceReloadListener
             .resultOrPartial(error -> LOGGER.error("Skipping quest {}: {}", id, error))
             .ifPresent(quest -> loaded.add(quest.withId(id))));
 
-        loaded.sort(Comparator.comparingInt(Quest::order)
-            .thenComparing(quest -> quest.id().toString()));
-        ordered = List.copyOf(loaded);
+        install(loaded);
         LOGGER.info("Loaded {} Cobblemon Dimensions Stories quests", ordered.size());
+    }
+
+    /** Sorts the quests and builds the id index; ids come from file names, so they are unique. */
+    void install(List<Quest> loaded) {
+        List<Quest> sorted = new ArrayList<>(loaded);
+        sorted.sort(Comparator.comparingInt(Quest::order)
+            .thenComparing(quest -> quest.id().toString()));
+        Map<ResourceLocation, Quest> index = new HashMap<>();
+        sorted.forEach(quest -> index.put(quest.id(), quest));
+        ordered = List.copyOf(sorted);
+        byId = Map.copyOf(index);
     }
 }

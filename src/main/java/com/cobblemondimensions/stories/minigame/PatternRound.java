@@ -104,7 +104,7 @@ final class PatternRound {
         typed = 0;
     }
 
-    private long durationNanos() {
+    long durationNanos() {
         return Math.max(5, 16 - level) * SECOND;
     }
 

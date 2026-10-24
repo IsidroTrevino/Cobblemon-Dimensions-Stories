@@ -29,11 +29,12 @@ public final class UiRegressionTests {
             "quest.cobblemon_dimensions_stories.unlisted", "English custom text")).getString());
 
         Component rewardName = Component.literal("5x ").append(Component.translatable("item.cobblemon.poke_ball"));
-        var rewardLine = QuestJournal.rewardLore(rewardName, false).getFirst();
+        // menu titles pass item names through StoriesText and let the client translate them
+        var rewardLine = StoriesText.resolve(rewardName);
         if (rewardLine.getSiblings().isEmpty()
             || !(rewardLine.getSiblings().getFirst().getContents() instanceof TranslatableContents contents)
             || !contents.getKey().equals("item.cobblemon.poke_ball")) {
-            throw new AssertionError("Reward lore must retain the client's Cobblemon item translation.");
+            throw new AssertionError("Reward names must retain the client's Cobblemon item translation.");
         }
 
         for (ClickType type : ClickType.values()) {

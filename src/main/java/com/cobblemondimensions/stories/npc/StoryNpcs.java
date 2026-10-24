@@ -1,6 +1,7 @@
 package com.cobblemondimensions.stories.npc;
 
 import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
+import com.cobblemondimensions.stories.shop.ShopService;
 import com.cobblemondimensions.stories.ui.StoriesText;
 import com.cobblemondimensions.stories.quest.Quest;
 import com.cobblemondimensions.stories.quest.QuestDefinitions;
@@ -9,6 +10,7 @@ import com.cobblemondimensions.stories.quest.QuestService;
 import com.cobblemondimensions.stories.quest.QuestStatus;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,7 +20,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -53,8 +54,11 @@ public final class StoryNpcs {
 
     private static final Map<UUID, RouteState> ROUTES = new HashMap<>();
     private static final Map<UUID, Conversation> CONVERSATIONS = new HashMap<>();
+    // every loaded Cobblemon NPC, whatever its class: kept from load and unload events so a
+    // scan never has to query the world's entities
+    private static final Set<Entity> CANDIDATES = new HashSet<>();
     // story NPCs the last scan saw; keeps the per-tick float pass small
-    private static final Set<UUID> TRACKED = new HashSet<>();
+    private static final Set<Entity> TRACKED = new HashSet<>();
 
     private static EntityType<?> npcType;
     private static boolean npcTypeResolved;
@@ -74,10 +78,10 @@ public final class StoryNpcs {
 
         StoryNpc npc = found.get();
         ServerDialogueService.cancel(player);
-        // Cobblemon already knows how to open this NPC's shop dialogue on an
-        // ordinary client. Reserve normal interaction for story progression.
+        // Sneaking opens the shopkeeper's own screen. NPCs without one fall back
+        // to Cobblemon's shop dialogue; normal interaction is for the story.
         if (player.isShiftKeyDown()) {
-            return false;
+            return npc.shop().map(shop -> ShopService.open(player, shop)).orElse(false);
         }
         int speaker = entity.getId();
         for (ResourceLocation questId : npc.quests()) {
@@ -133,7 +137,26 @@ public final class StoryNpcs {
     }
 
     /**
-     * Markers and movement in one pass over the entities near each player. NPCs
+     * Remembers Cobblemon NPCs as they load. Only the entity type is looked at here: the
+     * NPC class is read later, by the scan, since a freshly summoned NPC is configured
+     * after it is added to the world.
+     */
+    public static void onLoad(Entity entity) {
+        EntityType<?> type = npcType();
+        if (type != null && entity.getType() == type) {
+            CANDIDATES.add(entity);
+        }
+    }
+
+    public static void onUnload(Entity entity) {
+        if (CANDIDATES.remove(entity)) {
+            TRACKED.remove(entity);
+            ROUTES.remove(entity.getUUID());
+        }
+    }
+
+    /**
+     * Markers and movement in one pass over the NPCs near each player. NPCs
      * with nobody nearby are never visited.
      */
     public static void tick(MinecraftServer server) {
@@ -148,10 +171,18 @@ public final class StoryNpcs {
         TRACKED.clear();
         // two players in range of the same NPC must not both drive it
         Set<UUID> alreadyMoved = new HashSet<>();
+        // a copy: handling one NPC can end a conversation or sync a quest, and nothing there
+        // should be able to disturb the walk
+        // an unload event that never came would otherwise keep a dead entity here for good
+        CANDIDATES.removeIf(Entity::isRemoved);
+        List<Entity> npcs = List.copyOf(CANDIDATES);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Map<Entity, QuestMarker> markers = new HashMap<>();
             AABB box = player.getBoundingBox().inflate(SCAN_RADIUS);
-            for (Entity entity : player.level().getEntities(player, box)) {
+            for (Entity entity : npcs) {
+                if (entity.isRemoved() || entity.level() != player.level() || !box.intersects(entity.getBoundingBox())) {
+                    continue;
+                }
                 Optional<StoryNpc> found = resolve(entity);
                 if (found.isEmpty()) {
                     continue;
@@ -164,7 +195,7 @@ public final class StoryNpcs {
                         entity.setCustomName(readableName);
                     }
                 }
-                TRACKED.add(entity.getUUID());
+                TRACKED.add(entity);
                 QuestMarker marker = markerFor(player, npc);
                 if (marker != QuestMarker.NONE) {
                     markers.put(entity, marker);
@@ -178,6 +209,7 @@ public final class StoryNpcs {
     }
 
     public static void stop() {
+        CANDIDATES.clear();
         ROUTES.clear();
         CONVERSATIONS.clear();
         TRACKED.clear();
@@ -257,11 +289,9 @@ public final class StoryNpcs {
         if (TRACKED.isEmpty()) {
             return;
         }
-        for (ServerLevel level : server.getAllLevels()) {
-            for (UUID id : TRACKED) {
-                if (level.getEntity(id) instanceof Mob mob && (mob.isInWater() || mob.isInLava())) {
-                    mob.getJumpControl().jump();
-                }
+        for (Entity entity : TRACKED) {
+            if (!entity.isRemoved() && entity instanceof Mob mob && (mob.isInWater() || mob.isInLava())) {
+                mob.getJumpControl().jump();
             }
         }
     }

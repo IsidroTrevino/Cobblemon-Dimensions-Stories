@@ -5,6 +5,7 @@ import com.cobblemondimensions.stories.quest.QuestSaveData;
 import com.cobblemondimensions.stories.quest.QuestService;
 import com.cobblemondimensions.stories.ui.StoriesMenu;
 import com.cobblemondimensions.stories.ui.StoriesText;
+import com.cobblemondimensions.stories.ui.art.PokesweeperArt;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,13 @@ public final class MinigameService {
             return;
         }
         long now = System.nanoTime();
+        if (game == Minigame.PATTERN) {
+            closeCurrent(player, now);
+            PatternGame.start(player);
+            return;
+        }
         closeCurrent(player, now);
-        Session session = game == Minigame.PATTERN
-            ? new PatternSession(player, now) : new SweepSession(player, PokesweeperMode.of(game));
+        Session session = new SweepSession(player, PokesweeperMode.of(game));
         SESSIONS.put(player.getUUID(), session);
         session.show(now);
     }
@@ -78,6 +83,16 @@ public final class MinigameService {
         pokewrle.guess(typed, System.nanoTime());
     }
 
+    /** Whether this is a stand a Pattern round seats someone on; nobody else may interact with it. */
+    public static boolean isSeat(net.minecraft.world.entity.Entity entity) {
+        return PatternGame.isSeat(entity);
+    }
+
+    /** An armor stand left over from a Pattern round that never got to clean up after itself. */
+    public static boolean strayedSeat(net.minecraft.world.entity.Entity entity) {
+        return PatternGame.strayed(entity);
+    }
+
     public static int generationOf(ServerPlayer player) {
         Session session = SESSIONS.get(player.getUUID());
         return session instanceof PokewrleSession pokewrle ? pokewrle.round.generation() : ALL_GENERATIONS;
@@ -85,6 +100,9 @@ public final class MinigameService {
 
     /** State ticks without input, so a client cannot hold a timer open. */
     public static void tick(MinecraftServer server) {
+        if (SESSIONS.isEmpty()) {
+            return;
+        }
         long now = System.nanoTime();
         for (Session session : List.copyOf(SESSIONS.values())) {
             if (!session.current()) {
@@ -106,6 +124,7 @@ public final class MinigameService {
 
     /** Disconnect discards unfinished games; completed games were already paid while online. */
     public static void forget(ServerPlayer player) {
+        PatternGame.forget(player);
         Session session = SESSIONS.remove(player.getUUID());
         if (session != null) {
             session.settlement.discard();
@@ -114,6 +133,7 @@ public final class MinigameService {
 
     /** Reloads and server stops deliberately discard sessions. */
     public static void stop() {
+        PatternGame.stop();
         List<Session> sessions = List.copyOf(SESSIONS.values());
         SESSIONS.clear();
         for (Session session : sessions) {
@@ -125,6 +145,7 @@ public final class MinigameService {
     }
 
     private static void closeCurrent(ServerPlayer player, long now) {
+        PatternGame.leave(player);
         Session old = SESSIONS.remove(player.getUUID());
         if (old != null) {
             old.settle(now);
@@ -137,6 +158,13 @@ public final class MinigameService {
     private static PokewrleRound.Species species(PokedexSource.Entry entry) {
         return new PokewrleRound.Species(entry.id().toString(), entry.name(), entry.generation(),
             entry.primaryType(), entry.secondaryType(), entry.eggGroup(), entry.stage());
+    }
+
+    /** A Poke Ball marks a flag, with a banner standing in when Cobblemon's item is missing. */
+    private static Item flagItem() {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM
+            .getOptional(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("cobblemon", "poke_ball"))
+            .orElse(Items.ORANGE_BANNER);
     }
 
     private static Component text(String value) {
@@ -166,7 +194,7 @@ public final class MinigameService {
         final void show(long now) {
             opening = true;
             try {
-                menu = StoriesMenu.open(player, title(), configured -> { }, this::closed);
+                menu = StoriesMenu.open(player, title(), rows(), configured -> { }, this::closed);
             } finally {
                 opening = false;
             }
@@ -219,124 +247,15 @@ public final class MinigameService {
             player.playNotifySound(event, SoundSource.PLAYERS, 0.55F, pitch);
         }
 
+        /** Chest rows the game's menu needs. */
+        int rows() {
+            return StoriesMenu.SIZE / StoriesMenu.COLUMNS;
+        }
+
         abstract Component title();
         abstract void render(long now);
         abstract void settle(long now);
         void tick(long now) { }
-    }
-
-    private static final class PatternSession extends Session {
-        private static final Item[] ARROWS = {Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.ORANGE_WOOL, Items.LIME_WOOL};
-        private static final Item[] SHAPES = {Items.AMETHYST_SHARD, Items.LIGHT_BLUE_CONCRETE, Items.FIRE_CHARGE, Items.LIME_DYE};
-        private static final ChatFormatting[] COLORS = {ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.GOLD, ChatFormatting.GREEN};
-        private static final String[] DIRECTIONS = {"Up", "Down", "Left", "Right"};
-        private static final String[] SHAPE_NAMES = {"Pink diamond", "Blue square", "Orange circle", "Green cross"};
-        private final PatternRound round;
-        private long nextRefresh;
-        private int countdownBeat = -1;
-
-        PatternSession(ServerPlayer player, long now) {
-            super(player, Minigame.PATTERN);
-            round = new PatternRound(new Random(player.getRandom().nextLong()), now);
-        }
-
-        @Override
-        Component title() {
-            return StoriesText.translatable("screen.cobblemon_dimensions_stories.pattern");
-        }
-
-        @Override
-        void tick(long now) {
-            PatternRound.Phase before = round.phase();
-            round.advance(now);
-            if (round.phase() == PatternRound.Phase.OVER) {
-                settle(now);
-            }
-            if (round.phase() == PatternRound.Phase.COUNTDOWN) {
-                int beat = round.countdown(now);
-                if (beat != countdownBeat) {
-                    countdownBeat = beat;
-                    sound(SoundEvents.NOTE_BLOCK_BELL.value(), beat == 0 ? 1.6F : 0.7F + (3 - beat) * 0.2F);
-                }
-            } else {
-                countdownBeat = -1;
-            }
-            if (before != round.phase() || now >= nextRefresh) {
-                render(now);
-                nextRefresh = now + 200_000_000L;
-            }
-        }
-
-        private ItemStack sign(int direction, String prefix) {
-            String name = round.shapes() ? SHAPE_NAMES[direction] + " (" + DIRECTIONS[direction] + ")" : DIRECTIONS[direction];
-            return StoriesMenu.icon(round.shapes() ? SHAPES[direction] : ARROWS[direction],
-                text(prefix + name, COLORS[direction]));
-        }
-
-        @Override
-        void render(long now) {
-            menu.clear();
-            int[] sequence = round.sequence();
-            int top = Math.min(8, sequence.length);
-            for (int step = 0; step < sequence.length; step++) {
-                int slot = step < top ? (9 - top) / 2 + step
-                    : 9 + (9 - (sequence.length - top)) / 2 + step - top;
-                String prefix = (step < round.typed() ? "Done " : step == round.typed() ? "Next " : "") + (step + 1) + ". ";
-                menu.set(slot, sign(sequence[step], prefix), null);
-            }
-            String state = switch (round.phase()) {
-                case COUNTDOWN -> round.countdown(now) == 0 ? "GO!" : "Ready: " + round.countdown(now);
-                case PLAYING -> "Level " + round.level() + " - " + round.remainingSeconds(now) + " seconds";
-                case CLEARED -> round.level() == 9 ? "Shape mode begins next!" : round.perfect() ? "Perfect clear!" : "Level cleared!";
-                case OVER -> "Time! " + round.levelsCleared() + " levels cleared";
-            };
-            display(22, Items.CLOCK, text(state, round.phase() == PatternRound.Phase.OVER ? ChatFormatting.GOLD : ChatFormatting.AQUA),
-                text("Progress: " + round.typed() + " / " + sequence.length),
-                text("Streak: " + round.streak() + " - best streak: " + round.bestStreak()),
-                text("Record: " + Math.max(best(), Math.min(40, round.levelsCleared())) + " levels"));
-            int[] controls = {31, 40, 39, 41};
-            for (int direction = 0; direction < controls.length; direction++) {
-                int input = direction;
-                button(controls[direction], sign(direction, "Press "), button -> press(input));
-            }
-            display(45, Items.BOOK, text("Repeat the sequence in order"),
-                text("Click the direction buttons before time runs out."),
-                text("A wrong click resets progress and streak, but keeps the timer."),
-                text("From level 10: diamond Up, square Down, circle Left, cross Right."));
-            button(53, StoriesMenu.icon(Items.BARRIER, text("Finish and leave")), button -> player.closeContainer());
-            if (round.phase() == PatternRound.Phase.OVER) {
-                button(52, StoriesMenu.icon(Items.EMERALD, text("Play again")), button -> open(player, Minigame.PATTERN));
-            }
-        }
-
-        private void press(int direction) {
-            long now = System.nanoTime();
-            PatternRound.Input result = round.press(direction, now);
-            switch (result) {
-                case WRONG -> sound(SoundEvents.NOTE_BLOCK_BASEDRUM.value(), 0.6F);
-                case CORRECT -> sound(SoundEvents.NOTE_BLOCK_HAT.value(), 1.0F + round.typed() * 0.05F);
-                case CLEARED -> sound(SoundEvents.EXPERIENCE_ORB_PICKUP, 1.1F);
-                case IGNORED -> { }
-            }
-            if (round.phase() == PatternRound.Phase.OVER) {
-                settle(now);
-            }
-            render(now);
-        }
-
-        @Override
-        void settle(long now) {
-            round.finish(now);
-            settlement.runOnce(() -> {
-                int cleared = Math.min(40, round.levelsCleared());
-                record(cleared);
-                grant(MinigameRewards.forPattern(cleared));
-                if (cleared > 0) {
-                    player.displayClientMessage(StoriesText.translatable(
-                        "message.cobblemon_dimensions_stories.pattern_result", cleared).withStyle(ChatFormatting.AQUA), false);
-                }
-            });
-        }
     }
 
     private static final class SweepSession extends Session {
@@ -353,8 +272,18 @@ public final class MinigameService {
         }
 
         @Override
+        int rows() {
+            return PokesweeperView.ROWS;
+        }
+
+        @Override
         Component title() {
-            return text("Pokesweeper - " + mode.name());
+            return PokesweeperView.compose(mode, round.board(), view, 0, bestSeconds());
+        }
+
+        private int bestSeconds() {
+            int record = best();
+            return record > 0 ? RECORD_CAP - record : 0;
         }
 
         @Override
@@ -362,7 +291,7 @@ public final class MinigameService {
             int seconds = round.displaySeconds(now);
             if (seconds != lastSecond) {
                 lastSecond = seconds;
-                status(now);
+                render(now);
             }
         }
 
@@ -370,52 +299,52 @@ public final class MinigameService {
         void render(long now) {
             menu.clear();
             PokesweeperBoard board = round.board();
-            for (int slot = 0; slot < 45; slot++) {
+            menu.retitle(PokesweeperView.compose(mode, board, view, round.displaySeconds(now), bestSeconds()));
+            for (int slot = 0; slot < PokesweeperArt.VIEW_COLUMNS * PokesweeperArt.VIEW_ROWS; slot++) {
                 int cell = view.cellAt(slot);
                 if (cell < 0) {
                     continue;
                 }
-                String position = "(" + (cell % board.cols() + 1) + ", " + (cell / board.cols() + 1) + ") ";
-                ItemStack icon;
-                if (board.state(cell) == PokesweeperBoard.Cell.HIDDEN) {
-                    icon = StoriesMenu.icon(Items.GRAY_CONCRETE, text(position + "Buried ground"),
-                        text("Left click: dig. Right click: flag."));
-                } else if (board.state(cell) == PokesweeperBoard.Cell.FLAGGED) {
-                    boolean wrong = board.over() && board.wrongFlag(cell);
-                    icon = StoriesMenu.icon(wrong ? Items.RED_BANNER : Items.ORANGE_BANNER,
-                        text(position + (wrong ? "Wrong flag" : "Flag"), wrong ? ChatFormatting.RED : ChatFormatting.GOLD),
-                        text("Right click: remove flag."));
-                } else if (board.mine(cell)) {
-                    icon = StoriesMenu.icon(Items.TNT, text(position + "TNT", ChatFormatting.RED));
-                } else {
-                    int count = board.count(cell);
-                    icon = StoriesMenu.icon(count == 0 ? Items.WHITE_STAINED_GLASS_PANE : Items.PAPER,
-                        text(position + (count == 0 ? "Clear ground" : count + " neighbouring TNT"), ChatFormatting.GREEN),
-                        text("Left click: chord when adjacent flags match the number."));
-                    if (count > 0) {
-                        icon.setCount(count);
-                    }
-                }
-                button(slot, icon, button -> clickCell(cell, button));
+                button(slot, cellIcon(board, cell), button -> clickCell(cell, button));
             }
-            navigation(45, "Previous columns", -1, 0);
-            navigation(46, "Next columns", 1, 0);
-            navigation(47, "Previous rows", 0, -1);
-            navigation(48, "Next rows", 0, 1);
-            status(now);
-            int record = best();
-            display(50, Items.BOOK, text("Pokesweeper controls"),
-                text("Left: dig / chord. Right: toggle flag."),
-                text("Navigation changes the view only."),
-                text("First dig and its neighbours are safe."),
-                text(record > 0 ? "Best clear: " + (RECORD_CAP - record) + " seconds" : "No clear record yet."));
-            difficulty(51, PokesweeperMode.EASY);
-            difficulty(52, PokesweeperMode.MEDIUM);
-            difficulty(53, PokesweeperMode.HARD);
+            int control = PokesweeperView.CONTROL_ROW * StoriesMenu.COLUMNS;
+            navigation(control + PokesweeperView.PREVIOUS_COLUMNS, "Previous columns", -1, 0, view.firstCol() > 0);
+            navigation(control + PokesweeperView.NEXT_COLUMNS, "Next columns", 1, 0, view.lastCol() < board.cols());
+            navigation(control + PokesweeperView.PREVIOUS_ROWS, "Previous rows", 0, -1, view.firstRow() > 0);
+            navigation(control + PokesweeperView.NEXT_ROWS, "Next rows", 0, 1, view.lastRow() < board.rows());
+            button(control + PokesweeperView.RESTART, StoriesMenu.button(text("Restart this size"),
+                text("Settles this board and deals a new one.")), button -> open(player, mode.minigame()));
+            difficulty(control + PokesweeperView.FIRST_SIZE, PokesweeperMode.EASY);
+            difficulty(control + PokesweeperView.FIRST_SIZE + 1, PokesweeperMode.MEDIUM);
+            difficulty(control + PokesweeperView.FIRST_SIZE + 2, PokesweeperMode.HARD);
         }
 
-        private void navigation(int slot, String label, int horizontal, int vertical) {
-            button(slot, StoriesMenu.icon(Items.ARROW, text(label)), button -> {
+        private ItemStack cellIcon(PokesweeperBoard board, int cell) {
+            String position = "(" + (cell % board.cols() + 1) + ", " + (cell / board.cols() + 1) + ") ";
+            switch (board.state(cell)) {
+                case HIDDEN:
+                    return StoriesMenu.button(text(position + "Buried ground"), text("Left click: dig. Right click: flag."));
+                case FLAGGED:
+                    boolean wrong = board.over() && board.wrongFlag(cell);
+                    return StoriesMenu.icon(flagItem(),
+                        text(position + (wrong ? "Wrong flag" : "Flag"), wrong ? ChatFormatting.RED : ChatFormatting.GOLD),
+                        text("Right click: remove flag."));
+                default:
+                    if (board.mine(cell)) {
+                        return StoriesMenu.icon(Items.TNT, text(position + "TNT", ChatFormatting.RED));
+                    }
+                    int count = board.count(cell);
+                    return StoriesMenu.button(
+                        text(position + (count == 0 ? "Clear ground" : count + " neighbouring TNT"), ChatFormatting.GREEN),
+                        text("Left click: chord when adjacent flags match the number."));
+            }
+        }
+
+        private void navigation(int slot, String label, int horizontal, int vertical, boolean enabled) {
+            if (!enabled) {
+                return;
+            }
+            button(slot, StoriesMenu.button(text(label)), button -> {
                 view.move(horizontal, vertical);
                 sound(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F);
                 render(System.nanoTime());
@@ -423,20 +352,9 @@ public final class MinigameService {
         }
 
         private void difficulty(int slot, PokesweeperMode selected) {
-            button(slot, StoriesMenu.icon(selected == mode ? Items.EMERALD : Items.COMPASS,
-                text((selected == mode ? "Restart " : "Start ") + selected.name()),
+            button(slot, StoriesMenu.button(text((selected == mode ? "Restart " : "Start ") + selected.name()),
                 text(selected.cols() + " x " + selected.rows() + " / " + selected.mines() + " TNT")),
                 button -> open(player, selected.minigame()));
-        }
-
-        private void status(long now) {
-            PokesweeperBoard board = round.board();
-            String state = board.won() ? "Field swept clean!" : board.lost() ? "TNT! Round over" : "Uncovered " + board.uncovered() + " / " + board.safeCells();
-            display(49, Items.CLOCK, text(state, board.lost() ? ChatFormatting.RED : ChatFormatting.GREEN),
-                text("Time: " + round.displaySeconds(now) + " seconds"),
-                text("TNT minus flags: " + board.minesLeft()),
-                text("Columns " + (view.firstCol() + 1) + "-" + view.lastCol() + " of " + board.cols()),
-                text("Rows " + (view.firstRow() + 1) + "-" + view.lastRow() + " of " + board.rows()));
         }
 
         private void clickCell(int cell, int button) {

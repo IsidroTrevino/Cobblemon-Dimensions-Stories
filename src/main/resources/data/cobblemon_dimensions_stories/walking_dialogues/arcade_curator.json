@@ -25,7 +25,7 @@
       "id": "pattern_go",
       "speaker": { "translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator" },
       "lines": [
-        { "text": "Click the direction buttons in order before time runs out. Miss one and you start the pattern again." }
+        { "text": "Press W, A, S and D to match the arrows in order before time runs out. Miss one and you start the pattern again. Sneak to leave." }
       ],
       "minigame": "pattern"
     },

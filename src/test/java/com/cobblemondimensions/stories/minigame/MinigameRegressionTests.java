@@ -25,11 +25,13 @@ public final class MinigameRegressionTests {
         sweepTimeStartsAtFirstDigAndFreezesAtTermination();
         patternCountdownResetAndDeadlineAreAuthoritative();
         patternLengthsTimersAndShapeTransitionMatchTheOriginalGame();
+        patternKeysCountWhenPressedNotHeld();
+        patternBoardDrawsInEveryPhaseAndAnimationState();
         pokewrleRejectsWrongGenerationsAndScoresAllFiveHints();
         pokewrleTerminatesAfterAWinOrSixGuesses();
         pokewrleChatInputExpiresWithoutAcceptingALateGuess();
         settlementPaysOnceEvenWhenClosingOrReentered();
-        System.out.println("Minigame regression tests passed (11 scenarios).");
+        System.out.println("Minigame regression tests passed (13 scenarios).");
     }
 
     private static void firstDigOpensSafeNeighbourhoodsInEveryMode() {
@@ -230,6 +232,65 @@ public final class MinigameRegressionTests {
         equal(12, round.bestStreak(), "mistake must retain best streak");
         round.finish(now + 11);
         check(round.phase() == PatternRound.Phase.OVER, "closing must terminate Pattern");
+    }
+
+    private static void patternKeysCountWhenPressedNotHeld() {
+        equal(0, PatternGame.pressed(0, 1, 0, 0), "forward going down is up");
+        equal(1, PatternGame.pressed(0, -1, 0, 0), "back going down is down");
+        equal(2, PatternGame.pressed(1, 0, 0, 0), "strafing left is left");
+        equal(3, PatternGame.pressed(-1, 0, 0, 0), "strafing right is right");
+        equal(-1, PatternGame.pressed(0, 1, 0, 1), "a held key must not repeat");
+        equal(-1, PatternGame.pressed(0, 0, 0, 1), "letting go is not a press");
+        equal(0, PatternGame.pressed(0, 1, 0, -1), "going straight from back to forward is a press");
+        equal(2, PatternGame.pressed(1, 1, 0, 1), "a second key pressed while one is held still counts");
+        equal(0, PatternGame.pressed(1, 1, 0, 0), "two keys at once pick forward");
+    }
+
+    /** Every state the board can be in has to compose into a picture the client's font can draw. */
+    private static void patternBoardDrawsInEveryPhaseAndAnimationState() {
+        com.cobblemondimensions.stories.ui.art.UiAtlas.load();
+        PatternRound round = new PatternRound(new Random(3), 0);
+        long now = 0;
+        for (int level = 1; level <= 12; level++) {
+            for (long age = 0; age <= 3 * SECOND; age += 40_000_000L) {
+                PatternView.Effects idle = new PatternView.Effects(now - 60 * SECOND, now - 60 * SECOND, -1,
+                    now - 60 * SECOND, now, 14);
+                PatternView.Effects busy = new PatternView.Effects(now + age - 100_000_000L, now + age - 50_000_000L,
+                    level % 4, now + age - 200_000_000L, now, 14);
+                PatternView.compose(round, now + age, idle);
+                PatternView.compose(round, now + age, busy);
+            }
+            now += 1_900_000_000L;
+            round.advance(now);
+            int[] sequence = round.sequence();
+            for (int index = 0; index < sequence.length; index++) {
+                PatternView.compose(round, now + index * 10L, new PatternView.Effects(0, now, index, 0, now, 0));
+                round.press(sequence[index], now + index * 10L + 5);
+            }
+            PatternView.compose(round, now + 500_000_000L, new PatternView.Effects(0, now, 0, now, now, 0));
+            now += 2 * SECOND;
+            round.advance(now);
+        }
+        round.finish(now);
+        PatternView.compose(round, now + SECOND, new PatternView.Effects(0, 0, -1, 0, 0, 99));
+        // a wrong press, then running the clock out inside the last quarter
+        PatternRound late = new PatternRound(new Random(5), 0);
+        late.advance(1_900_000_000L);
+        for (long age = 0; age <= 16 * SECOND; age += 100_000_000L) {
+            PatternView.compose(late, 1_900_000_000L + age, new PatternView.Effects(0, 0, -1, 0, 0, 0));
+        }
+        // one frame is sent every tick the picture changes, so its size is worth watching
+        PatternRound frameRound = new PatternRound(new Random(8), 0);
+        frameRound.advance(1_900_000_000L);
+        int[] size = new int[2];
+        PatternView.compose(frameRound, 3 * SECOND, new PatternView.Effects(0, 0, -1, 0, 0, 14))
+            .visit((style, text) -> {
+                size[0]++;
+                size[1] += text.length();
+                return Optional.empty();
+            }, net.minecraft.network.chat.Style.EMPTY);
+        System.out.println("Pattern frame: " + size[0] + " styled runs, " + size[1] + " characters");
+        check(true, "the board draws in every phase");
     }
 
     private static void pokewrleRejectsWrongGenerationsAndScoresAllFiveHints() {

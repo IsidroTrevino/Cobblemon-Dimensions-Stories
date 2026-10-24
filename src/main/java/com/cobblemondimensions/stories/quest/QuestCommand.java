@@ -5,6 +5,8 @@ import com.cobblemondimensions.stories.dialogue.ServerDialogueService;
 import com.cobblemondimensions.stories.minigame.Minigame;
 import com.cobblemondimensions.stories.minigame.MinigameService;
 import com.cobblemondimensions.stories.minigame.PokedexSource;
+import com.cobblemondimensions.stories.shop.ShopDialogueDefinitions;
+import com.cobblemondimensions.stories.shop.ShopService;
 import com.cobblemondimensions.stories.ui.QuestJournal;
 import com.cobblemondimensions.stories.ui.StoriesText;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -36,6 +38,9 @@ public final class QuestCommand {
 
     private static final SuggestionProvider<CommandSourceStack> DIALOGUE_IDS = (context, builder) ->
         SharedSuggestionProvider.suggestResource(WalkingDialogueDefinitions.get().ids(), builder);
+
+    private static final SuggestionProvider<CommandSourceStack> SHOP_IDS = (context, builder) ->
+        SharedSuggestionProvider.suggestResource(ShopDialogueDefinitions.get().ids(), builder);
 
     private static final SuggestionProvider<CommandSourceStack> GAME_IDS = (context, builder) ->
         SharedSuggestionProvider.suggest(
@@ -99,6 +104,13 @@ public final class QuestCommand {
                             targets(context),
                             ResourceLocationArgument.getId(context, "quest")
                         )))))
+            .then(Commands.literal("shop")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.argument("shop", ResourceLocationArgument.id())
+                    .suggests(SHOP_IDS)
+                    .executes(context -> shop(context, List.of(self(context))))
+                    .then(Commands.argument("targets", EntityArgument.players())
+                        .executes(context -> shop(context, targets(context))))))
             .then(Commands.literal("minigame")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("game", StringArgumentType.word())
@@ -115,6 +127,16 @@ public final class QuestCommand {
         throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         QuestJournal.open(self(context));
         return 1;
+    }
+
+    private static int shop(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> players) {
+        ResourceLocation id = ResourceLocationArgument.getId(context, "shop");
+        if (ShopDialogueDefinitions.get().byId(id).isEmpty()) {
+            context.getSource().sendFailure(Component.literal("Unknown shop dialogue: " + id));
+            return 0;
+        }
+        players.forEach(player -> ShopService.open(player, id));
+        return players.size();
     }
 
     private static int minigame(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> players) {

@@ -1,0 +1,79 @@
+{
+  "theme": "hand",
+  "speaker": {"translate": "npc.cobblemon_dimensions_stories.hand_shopkeeper", "fallback": "The Curator"},
+  "currency": "minecraft:emerald",
+  "pages": [
+    {
+      "id": "main",
+      "title": "CURIO CLOSET",
+      "lines": ["A pair of gloved hands unfolds from the dark. What catches your eye?"],
+      "options": [
+        {"text": "See the shop", "goto": "catalog"},
+        {"text": "Talk", "goto": "talk_1"},
+        {"text": "Say goodbye", "goto": "goodbye"}
+      ]
+    },
+    {
+      "id": "catalog",
+      "title": "BROWSE THE SHELVES",
+      "catalog": [
+        {"item": "cobblemon:poke_ball", "name": "Poké Ball", "price": 3},
+        {"item": "cobblemon:potion", "name": "Potion", "price": 4},
+        {"item": "cobblemon:great_ball", "name": "Great Ball", "price": 6},
+        {"item": "cobblemon:revive", "name": "Revive", "price": 8}
+      ],
+      "confirm": "confirm",
+      "next": "main"
+    },
+    {
+      "id": "confirm",
+      "title": "FINALIZE TRADE",
+      "lines": ["Are you sure you want to buy", "{item}", "{price} Emeralds"],
+      "options": [
+        {"text": "Yes", "buy": true},
+        {"text": "No", "goto": "purchase_cancelled"}
+      ],
+      "bought": "purchase_success",
+      "refused": "purchase_failure"
+    },
+    {
+      "id": "purchase_success",
+      "title": "A FAIR EXCHANGE",
+      "mood": "yes",
+      "lines": ["Purchased {item}! The hand places it carefully in your inventory."],
+      "next": "catalog"
+    },
+    {
+      "id": "purchase_failure",
+      "title": "NO DEAL",
+      "mood": "no",
+      "lines": ["Not enough Emeralds. The hand refuses the trade."],
+      "next": "catalog"
+    },
+    {
+      "id": "purchase_cancelled",
+      "title": "NO DEAL",
+      "mood": "no",
+      "lines": ["The hand withdraws. Nothing changes hands."],
+      "next": "catalog"
+    },
+    {
+      "id": "talk_1",
+      "title": "A QUIET WORD",
+      "lines": ["The hands move with practiced care. Every object here belonged to a traveler who stopped listening to the road."],
+      "next": "talk_2"
+    },
+    {
+      "id": "talk_2",
+      "title": "A QUIET WORD",
+      "lines": ["Beyond town, the old path has begun returning things that were never lost. Keep your team close if you follow it."],
+      "next": "main"
+    },
+    {
+      "id": "goodbye",
+      "title": "UNTIL NEXT TIME",
+      "lines": ["The fingers fold back into the closet. Return when something calls to you."],
+      "close": true
+    }
+  ]
+}

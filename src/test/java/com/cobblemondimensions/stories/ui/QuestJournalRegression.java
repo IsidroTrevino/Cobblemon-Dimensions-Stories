@@ -1,10 +1,11 @@
 package com.cobblemondimensions.stories.ui;
 
+import com.cobblemondimensions.stories.quest.QuestStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/** Checks the pagination and notification state used by the real journal. */
+/** Checks the paging and notification state used by the real journal. */
 public final class QuestJournalRegression {
     private static int checks;
 
@@ -18,32 +19,38 @@ public final class QuestJournalRegression {
     }
 
     private static void everyQuestRemainsReachable() {
-        for (int size : new int[] {0, 1, 45, 46, 90, 137}) {
-            QuestJournal.PageWindow window = new QuestJournal.PageWindow(size, 0);
-            List<Integer> visible = new ArrayList<>();
-            for (int page = 0; page < window.pages(); page++) {
-                for (int index = window.first(); index < window.last(); index++) {
-                    visible.add(index);
-                }
-                window = window.next();
-            }
-            expect(visible.size() == size, "every entry in a " + size + "-quest pack can be visited");
+        for (int size : new int[] {0, 1, 6, 7, 12, 45}) {
+            List<JournalView.Row> rows = new ArrayList<>();
             for (int index = 0; index < size; index++) {
-                expect(visible.get(index) == index, "pagination neither skips nor duplicates quest " + index);
+                rows.add(new JournalView.Row("Quest " + index, QuestStatus.AVAILABLE));
             }
-            expect(window.next().page() == window.page(), "next clamps at the final page");
+            int pages = frame(rows, 0).pages();
+            expect(pages == Math.max(1, (size + 5) / 6), "a " + size + "-quest pack has the right number of pages");
+            List<Integer> shown = new ArrayList<>();
+            for (int page = 0; page < pages; page++) {
+                int first = frame(rows, page).shownPage() * 6;
+                for (int index = first; index < Math.min(size, first + 6); index++) {
+                    shown.add(index);
+                }
+            }
+            expect(shown.size() == size, "every entry in a " + size + "-quest pack can be visited");
+            for (int index = 0; index < size; index++) {
+                expect(shown.get(index) == index, "paging neither skips nor duplicates quest " + index);
+            }
         }
     }
 
     private static void pagesClampAfterReload() {
-        QuestJournal.PageWindow shrunk = new QuestJournal.PageWindow(2, 3);
-        expect(shrunk.page() == 0 && shrunk.first() == 0 && shrunk.last() == 2,
-            "a shrinking datapack clamps the old page");
-        QuestJournal.PageWindow empty = new QuestJournal.PageWindow(0, 7);
-        expect(empty.pages() == 1 && empty.page() == 0 && empty.first() == empty.last(),
-            "an empty pack has one empty page");
-        expect(new QuestJournal.PageWindow(46, -1).previous().page() == 0,
-            "previous cannot create a negative page");
+        List<JournalView.Row> two = List.of(new JournalView.Row("a", QuestStatus.AVAILABLE),
+            new JournalView.Row("b", QuestStatus.AVAILABLE));
+        expect(frame(two, 3).shownPage() == 0, "a shrinking datapack clamps the old page");
+        expect(frame(two, -1).shownPage() == 0, "a page can never go negative");
+        JournalView.Frame empty = frame(List.of(), 7);
+        expect(empty.pages() == 1 && empty.shownPage() == 0, "an empty pack has one empty page");
+    }
+
+    private static JournalView.Frame frame(List<JournalView.Row> rows, int page) {
+        return new JournalView.Frame(rows, page, -1, "", "", "", 0L, 0L);
     }
 
     private static void unreadQuestsNotifyOnceUntilVisited() {
